@@ -1,0 +1,12 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "satisfactoryServerName": {
+      "value": "sands"
+    },
+    "satisfactoryServerUrl": {
+      "value": "http://136.243.46.118:8080"
+    }
+  }
+}

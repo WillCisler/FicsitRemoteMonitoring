@@ -1,0 +1,11 @@
+{
+    "IsEncrypted": false,
+    "Values": {
+        "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+        "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated",
+        "EVENT_HUB_NAMESPACE": "satisfactory-eventhub-bh7pygddhw22e.servicebus.windows.net",
+        "EVENT_HUB_NAME": "satisfactory-data",
+        "SATISFACTORY_FRM_URL": "http://136.243.46.118:8080",
+        "SATISFACTORY_SERVER_NAME": "sands"
+    }
+}
