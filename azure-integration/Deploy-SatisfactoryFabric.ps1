@@ -1,3 +1,4 @@
+## use  bicep file satisfactory-fabric-integration-fixed.bicep
 # Satisfactory to Microsoft Fabric - Deployment Script
 # This script deploys all the necessary Azure resources to stream Satisfactory data to Microsoft Fabric
 

@@ -31,7 +31,17 @@ namespace SatisfactoryDataStreamer
             "getExtractor",       // Resource extraction rates
             "getGenerators",      // Power generation
             "getVehicles",        // Train/truck/drone status
-            "getSessionInfo"      // Session metadata
+            "getSessionInfo",     // Session metadata
+
+            // CONNECTION & LOGISTICS DATA
+            "getBelts",           // Conveyor belt networks
+            "getLifts",           // Conveyor lifts  
+            "getPipes",           // Pipeline networks
+            "getCables",          // Power cables
+            "getTrainRails",      // Railway connections
+            "getHypertube",       // Hyperloop networks
+            "getSplitterMerger",  // Factory connection points
+            "getThroughputCounter" // Flow monitoring
         };
 
         public SatisfactoryDataStreamer(HttpClient httpClient, ILogger<SatisfactoryDataStreamer> logger)

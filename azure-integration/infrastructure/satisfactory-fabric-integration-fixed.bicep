@@ -124,6 +124,10 @@ resource functionApp 'Microsoft.Web/sites@2021-03-01' = {
       http20Enabled: false
       functionAppScaleLimit: 200
       minimumElasticInstanceCount: 0
+      netFrameworkVersion: 'v8.0'
+      use32BitWorkerProcess: false
+      ftpsState: 'FtpsOnly'
+      minTlsVersion: '1.2'
     }
     scmSiteAlsoStopped: false
     clientAffinityEnabled: false
@@ -145,8 +149,7 @@ resource functionAppSettings 'Microsoft.Web/sites/config@2021-03-01' = {
     WEBSITE_CONTENTAZUREFILECONNECTIONSTRING: 'DefaultEndpointsProtocol=https;AccountName=${storageAccountName};EndpointSuffix=${environment().suffixes.storage};AccountKey=${storageAccount.listKeys().keys[0].value}'
     WEBSITE_CONTENTSHARE: toLower(functionAppName)
     FUNCTIONS_EXTENSION_VERSION: '~4'
-    WEBSITE_NODE_DEFAULT_VERSION: '~18'
-    FUNCTIONS_WORKER_RUNTIME: 'dotnet'
+    FUNCTIONS_WORKER_RUNTIME: 'dotnet-isolated'
     APPINSIGHTS_INSTRUMENTATIONKEY: applicationInsights.properties.InstrumentationKey
     APPLICATIONINSIGHTS_CONNECTION_STRING: applicationInsights.properties.ConnectionString
     EVENT_HUB_NAMESPACE: '${eventHubNamespaceName}.servicebus.windows.net'

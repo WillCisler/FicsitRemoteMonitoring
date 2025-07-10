@@ -1,0 +1,24 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "functionPrefix": {
+            "value": "satisfactory-v2"
+        },
+        "satisfactoryServerUrl": {
+            "value": "http://136.243.46.118:8080"
+        },
+        "satisfactoryServerName": {
+            "value": "sands"
+        },
+        "existingEventHubNamespace": {
+            "value": "satisfactory-eventhub-rwp7wtublc2uy"
+        },
+        "existingEventHubName": {
+            "value": "satisfactory-data"
+        },
+        "existingAppInsightsName": {
+            "value": "satisfactory-insights-rwp7wtublc2uy"
+        }
+    }
+}
