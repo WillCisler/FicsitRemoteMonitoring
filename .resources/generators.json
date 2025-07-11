@@ -1,0 +1,120 @@
+"timestamp": 2025-07-10T20: 49: 05.3932883Z,
+"endpoint": getLifts,
+"server": sands,
+"data": [
+    {
+        "ID": "Build_ConveyorLiftMk1_C_2147452298",
+        "Name": "Conveyor Lift Mk.1",
+        "ClassName": "Build_ConveyorLiftMk1_C",
+        "location": {
+            "x": 377710.5,
+            "y": -110651.9921875,
+            "z": 9202,
+            "rotation": "150.00184606582434"
+        },
+        "features": {
+            "properties": {
+                "name": "Conveyor Lift Mk.1",
+                "type": "Conveyor Lift Mk.1"
+            },
+            "geometry": {
+                "type": "Point",
+                "coordinates": {
+                    "x": 377710.5,
+                    "y": -110651.9921875,
+                    "z": 9202
+                }
+            }
+        },
+        "BoundingBox": {
+            "min": {
+                "x": 377610.5,
+                "y": -110751.9921875,
+                "z": 6332
+            },
+            "max": {
+                "x": 377810.5,
+                "y": -110551.9921875,
+                "z": 9372
+            }
+        },
+        "ColorSlot": {
+            "PrimaryColor": "FA954900",
+            "SecondaryColor": "5F668C00"
+        },
+        "location0": {
+            "x": 377710.5,
+            "y": -110651.9921875,
+            "z": 9202
+        },
+        "Connected0": true,
+        "location1": {
+            "x": 377710.5,
+            "y": -110651.9921875,
+            "z": 6402
+        },
+        "Connected1": true,
+        "Length": 2800,
+        "ItemsPerMinute": 60
+    },
+    {
+        "ID": "Build_ConveyorLiftMk4_C_2147379290",
+        "Name": "Conveyor Lift Mk.4",
+        "ClassName": "Build_ConveyorLiftMk4_C",
+        "location": {
+            "x": 191400,
+            "y": 87000,
+            "z": 12300,
+            "rotation": 270
+        },
+        "features": {
+            "properties": {
+                "name": "Conveyor Lift Mk.4",
+                "type": "Conveyor Lift Mk.4"
+            },
+            "geometry": {
+                "type": "Point",
+                "coordinates": {
+                    "x": 191400,
+                    "y": 87000,
+                    "z": 12300
+                }
+            }
+        },
+        "BoundingBox": {
+            "min": {
+                "x": 191300,
+                "y": 86900,
+                "z": 12080
+            },
+            "max": {
+                "x": 191500,
+                "y": 87100,
+                "z": 12470
+            }
+        },
+        "ColorSlot": {
+            "PrimaryColor": "FA954900",
+            "SecondaryColor": "5F668C00"
+        },
+        "location0": {
+            "x": 191400,
+            "y": 87000,
+            "z": 12300
+        },
+        "Connected0": true,
+        "location1": {
+            "x": 191400,
+            "y": 87000,
+            "z": 12150
+        },
+        "Connected1": true,
+        "Length": 150,
+        "ItemsPerMinute": 480
+    }
+],
+"x-opt-enqueued-time": 2025-07-10T20: 49: 05.352Z,
+"x-opt-sequence-number": 375,
+"x-opt-offset": 8604088408,
+"x-opt-publisher": ,
+"x-opt-partition-key":
