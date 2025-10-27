@@ -1,0 +1,130 @@
+// =============================================================================
+// DEBUG VERSION - PARSE GENERATORS DATA FUNCTION
+// =============================================================================
+// Purpose: Step-by-step debugging version of parse_generators_data function
+// Use this to test each parsing step individually
+// =============================================================================
+
+// Step 1: Test basic data filtering
+// RawData 
+// | where endpoint == 'getGenerators'
+// | take 5
+// | project timestamp, server, endpoint, data
+
+// Step 2: Test JSON parsing
+// RawData
+// | where endpoint == 'getGenerators'
+// | extend parsed_data = parse_json(data)
+// | take 5
+// | project timestamp, server, parsed_data
+
+// Step 3: Test mv-expand
+// RawData
+// | where endpoint == 'getGenerators'
+// | extend parsed_data = parse_json(data)
+// | mv-expand generator = parsed_data
+// | where generator != ''
+// | take 5
+// | project timestamp, server, generator
+
+// Step 4: Test nested JSON parsing
+// RawData
+// | where endpoint == 'getGenerators'
+// | extend parsed_data = parse_json(data)
+// | mv-expand generator = parsed_data
+// | where generator != ''
+// | extend generator_obj = parse_json(generator)
+// | take 5
+// | project timestamp, server, generator_obj
+
+// Step 5: Test specific field extraction
+// RawData
+// | where endpoint == 'getGenerators'
+// | extend parsed_data = parse_json(data)
+// | mv-expand generator = parsed_data
+// | where generator != ''
+// | extend generator_obj = parse_json(generator)
+// | project 
+//     generator_id = tostring(generator_obj.ID),
+//     generator_name = tostring(generator_obj.Name),
+//     generator_class = tostring(generator_obj.ClassName),
+//     power_production_potential = toreal(generator_obj.PowerProductionPotential),
+//     current_production = toreal(generator_obj.BaseProd)
+// | take 5
+
+// Step 6: Test nested PowerInfo access
+// RawData
+// | where endpoint == 'getGenerators'
+// | extend parsed_data = parse_json(data)
+// | mv-expand generator = parsed_data
+// | where generator != ''
+// | extend generator_obj = parse_json(generator)
+// | project 
+//     generator_id = tostring(generator_obj.ID),
+//     has_power_info = isnotnull(generator_obj.PowerInfo),
+//     circuit_group_id = case(
+//         isnotnull(generator_obj.PowerInfo), 
+//         tolong(generator_obj.PowerInfo.CircuitGroupID), 
+//         long(null)
+//     ),
+//     circuit_id = case(
+//         isnotnull(generator_obj.PowerInfo), 
+//         tolong(generator_obj.PowerInfo.CircuitID), 
+//         long(null)
+//     )
+// | take 5
+
+// Step 7: Test FuelInventory array access
+// RawData
+// | where endpoint == 'getGenerators'
+// | extend parsed_data = parse_json(data)
+// | mv-expand generator = parsed_data
+// | where generator != ''
+// | extend generator_obj = parse_json(generator)
+// | project 
+//     generator_id = tostring(generator_obj.ID),
+//     has_fuel_inventory = isnotnull(generator_obj.FuelInventory),
+//     fuel_inventory_length = array_length(generator_obj.FuelInventory),
+//     fuel_max_amount = case(
+//         isnotnull(generator_obj.FuelInventory) and array_length(generator_obj.FuelInventory) > 0, 
+//         toreal(generator_obj.FuelInventory[0].MaxAmount), 
+//         0.0
+//     )
+// | take 5
+
+// Step 8: Test location access
+// RawData
+// | where endpoint == 'getGenerators'
+// | extend parsed_data = parse_json(data)
+// | mv-expand generator = parsed_data
+// | where generator != ''
+// | extend generator_obj = parse_json(generator)
+// | project 
+//     generator_id = tostring(generator_obj.ID),
+//     has_location = isnotnull(generator_obj.location),
+//     location_x = case(
+//         isnotnull(generator_obj.location), 
+//         toreal(generator_obj.location.x), 
+//         real(null)
+//     ),
+//     location_y = case(
+//         isnotnull(generator_obj.location), 
+//         toreal(generator_obj.location.y), 
+//         real(null)
+//     ),
+//     location_z = case(
+//         isnotnull(generator_obj.location), 
+//         toreal(generator_obj.location.z), 
+//         real(null)
+//     )
+// | take 5
+
+// =============================================================================
+// DEBUGGING INSTRUCTIONS
+// =============================================================================
+// 1. Run each step individually by uncommenting one section at a time
+// 2. Check the output for each step to identify where parsing fails
+// 3. Look for null values, empty arrays, or missing fields
+// 4. Adjust the main function based on what you find
+// 5. Use this to understand your data structure before running the full function
+// =============================================================================

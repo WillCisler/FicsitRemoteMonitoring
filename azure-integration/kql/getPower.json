@@ -1,0 +1,904 @@
+{
+    "timestamp": "2025-07-07T19: 56: 00.4782627Z",
+    "endpoint": "getPower",
+    "server": "sands",
+    "data": [
+        {
+            "CircuitGroupID": 0,
+            "PowerProduction": 37576.234375,
+            "PowerConsumed": 8926.70703125,
+            "PowerCapacity": 41333.859375,
+            "PowerMaxConsumed": 16721.38671875,
+            "BatteryInput": 0,
+            "BatteryOutput": 0,
+            "BatteryDifferential": 0,
+            "BatteryPercent": 100,
+            "BatteryCapacity": 2100,
+            "BatteryTimeEmpty": "00:00:00",
+            "BatteryTimeFull": "00:00:00",
+            "AssociatedCircuits": [
+                24,
+                10,
+                11,
+                2,
+                23,
+                15,
+                238,
+                174,
+                189,
+                32,
+                28,
+                231,
+                49,
+                132,
+                254,
+                182,
+                92,
+                68,
+                5,
+                9,
+                12,
+                194,
+                18,
+                8,
+                3
+            ],
+            "FuseTriggered": false
+        },
+        {
+            "CircuitGroupID": 1,
+            "PowerProduction": 0,
+            "PowerConsumed": 0,
+            "PowerCapacity": 0,
+            "PowerMaxConsumed": 1888,
+            "BatteryInput": 0,
+            "BatteryOutput": 0,
+            "BatteryDifferential": 0,
+            "BatteryPercent": 0,
+            "BatteryCapacity": 0,
+            "BatteryTimeEmpty": "00:00:00",
+            "BatteryTimeFull": "00:00:00",
+            "AssociatedCircuits": [
+                181,
+                190,
+                236,
+                112,
+                193
+            ],
+            "FuseTriggered": false
+        },
+        {
+            "CircuitGroupID": 2,
+            "PowerProduction": 0,
+            "PowerConsumed": 0,
+            "PowerCapacity": 0,
+            "PowerMaxConsumed": 4,
+            "BatteryInput": 0,
+            "BatteryOutput": 0,
+            "BatteryDifferential": 0,
+            "BatteryPercent": 0,
+            "BatteryCapacity": 0,
+            "BatteryTimeEmpty": "00:00:00",
+            "BatteryTimeFull": "00:00:00",
+            "AssociatedCircuits": [
+                14
+            ],
+            "FuseTriggered": false
+        },
+        {
+            "CircuitGroupID": 3,
+            "PowerProduction": 0,
+            "PowerConsumed": 0,
+            "PowerCapacity": 0,
+            "PowerMaxConsumed": 0,
+            "BatteryInput": 0,
+            "BatteryOutput": 0,
+            "BatteryDifferential": 0,
+            "BatteryPercent": 0,
+            "BatteryCapacity": 0,
+            "BatteryTimeEmpty": "00:00:00",
+            "BatteryTimeFull": "00:00:00",
+            "AssociatedCircuits": [
+                1
+            ],
+            "FuseTriggered": false
+        },
+        {
+            "CircuitGroupID": 4,
+            "PowerProduction": 0,
+            "PowerConsumed": 0,
+            "PowerCapacity": 0,
+            "PowerMaxConsumed": 0,
+            "BatteryInput": 0,
+            "BatteryOutput": 0,
+            "BatteryDifferential": 0,
+            "BatteryPercent": 0,
+            "BatteryCapacity": 0,
+            "BatteryTimeEmpty": "00:00:00",
+            "BatteryTimeFull": "00:00:00",
+            "AssociatedCircuits": [
+                36
+            ],
+            "FuseTriggered": false
+        },
+        {
+            "CircuitGroupID": 5,
+            "PowerProduction": 0,
+            "PowerConsumed": 0,
+            "PowerCapacity": 0,
+            "PowerMaxConsumed": 12,
+            "BatteryInput": 0,
+            "BatteryOutput": 0,
+            "BatteryDifferential": 0,
+            "BatteryPercent": 0,
+            "BatteryCapacity": 0,
+            "BatteryTimeEmpty": "00:00:00",
+            "BatteryTimeFull": "00:00:00",
+            "AssociatedCircuits": [
+                284
+            ],
+            "FuseTriggered": false
+        },
+        {
+            "CircuitGroupID": 6,
+            "PowerProduction": 0,
+            "PowerConsumed": 0,
+            "PowerCapacity": 0,
+            "PowerMaxConsumed": 90,
+            "BatteryInput": 0,
+            "BatteryOutput": 0,
+            "BatteryDifferential": 0,
+            "BatteryPercent": 0,
+            "BatteryCapacity": 0,
+            "BatteryTimeEmpty": "00:00:00",
+            "BatteryTimeFull": "00:00:00",
+            "AssociatedCircuits": [
+                35
+            ],
+            "FuseTriggered": false
+        },
+        {
+            "CircuitGroupID": 7,
+            "PowerProduction": 0,
+            "PowerConsumed": 0,
+            "PowerCapacity": 0,
+            "PowerMaxConsumed": 90,
+            "BatteryInput": 0,
+            "BatteryOutput": 0,
+            "BatteryDifferential": 0,
+            "BatteryPercent": 0,
+            "BatteryCapacity": 0,
+            "BatteryTimeEmpty": "00:00:00",
+            "BatteryTimeFull": "00:00:00",
+            "AssociatedCircuits": [
+                52
+            ],
+            "FuseTriggered": false
+        },
+        {
+            "CircuitGroupID": 8,
+            "PowerProduction": 0,
+            "PowerConsumed": 0,
+            "PowerCapacity": 0,
+            "PowerMaxConsumed": 90,
+            "BatteryInput": 0,
+            "BatteryOutput": 0,
+            "BatteryDifferential": 0,
+            "BatteryPercent": 0,
+            "BatteryCapacity": 0,
+            "BatteryTimeEmpty": "00:00:00",
+            "BatteryTimeFull": "00:00:00",
+            "AssociatedCircuits": [
+                48
+            ],
+            "FuseTriggered": false
+        },
+        {
+            "CircuitGroupID": 9,
+            "PowerProduction": 0,
+            "PowerConsumed": 0,
+            "PowerCapacity": 0,
+            "PowerMaxConsumed": 12,
+            "BatteryInput": 0,
+            "BatteryOutput": 0,
+            "BatteryDifferential": 0,
+            "BatteryPercent": 0,
+            "BatteryCapacity": 0,
+            "BatteryTimeEmpty": "00:00:00",
+            "BatteryTimeFull": "00:00:00",
+            "AssociatedCircuits": [
+                290
+            ],
+            "FuseTriggered": false
+        },
+        {
+            "CircuitGroupID": 10,
+            "PowerProduction": 0,
+            "PowerConsumed": 0,
+            "PowerCapacity": 0,
+            "PowerMaxConsumed": 270,
+            "BatteryInput": 0,
+            "BatteryOutput": 0,
+            "BatteryDifferential": 0,
+            "BatteryPercent": 0,
+            "BatteryCapacity": 0,
+            "BatteryTimeEmpty": "00:00:00",
+            "BatteryTimeFull": "00:00:00",
+            "AssociatedCircuits": [
+                61
+            ],
+            "FuseTriggered": false
+        },
+        {
+            "CircuitGroupID": 11,
+            "PowerProduction": 0,
+            "PowerConsumed": 0,
+            "PowerCapacity": 0,
+            "PowerMaxConsumed": 90,
+            "BatteryInput": 0,
+            "BatteryOutput": 0,
+            "BatteryDifferential": 0,
+            "BatteryPercent": 0,
+            "BatteryCapacity": 0,
+            "BatteryTimeEmpty": "00:00:00",
+            "BatteryTimeFull": "00:00:00",
+            "AssociatedCircuits": [
+                45
+            ],
+            "FuseTriggered": false
+        },
+        {
+            "CircuitGroupID": 12,
+            "PowerProduction": 0,
+            "PowerConsumed": 0,
+            "PowerCapacity": 0,
+            "PowerMaxConsumed": 90,
+            "BatteryInput": 0,
+            "BatteryOutput": 0,
+            "BatteryDifferential": 0,
+            "BatteryPercent": 0,
+            "BatteryCapacity": 0,
+            "BatteryTimeEmpty": "00:00:00",
+            "BatteryTimeFull": "00:00:00",
+            "AssociatedCircuits": [
+                42
+            ],
+            "FuseTriggered": false
+        },
+        {
+            "CircuitGroupID": 13,
+            "PowerProduction": 0,
+            "PowerConsumed": 0,
+            "PowerCapacity": 0,
+            "PowerMaxConsumed": 12,
+            "BatteryInput": 0,
+            "BatteryOutput": 0,
+            "BatteryDifferential": 0,
+            "BatteryPercent": 0,
+            "BatteryCapacity": 0,
+            "BatteryTimeEmpty": "00:00:00",
+            "BatteryTimeFull": "00:00:00",
+            "AssociatedCircuits": [
+                285
+            ],
+            "FuseTriggered": false
+        },
+        {
+            "CircuitGroupID": 14,
+            "PowerProduction": 0,
+            "PowerConsumed": 0,
+            "PowerCapacity": 0,
+            "PowerMaxConsumed": 12,
+            "BatteryInput": 0,
+            "BatteryOutput": 0,
+            "BatteryDifferential": 0,
+            "BatteryPercent": 0,
+            "BatteryCapacity": 0,
+            "BatteryTimeEmpty": "00:00:00",
+            "BatteryTimeFull": "00:00:00",
+            "AssociatedCircuits": [
+                291
+            ],
+            "FuseTriggered": false
+        },
+        {
+            "CircuitGroupID": 15,
+            "PowerProduction": 0,
+            "PowerConsumed": 0,
+            "PowerCapacity": 0,
+            "PowerMaxConsumed": 12,
+            "BatteryInput": 0,
+            "BatteryOutput": 0,
+            "BatteryDifferential": 0,
+            "BatteryPercent": 0,
+            "BatteryCapacity": 0,
+            "BatteryTimeEmpty": "00:00:00",
+            "BatteryTimeFull": "00:00:00",
+            "AssociatedCircuits": [
+                296
+            ],
+            "FuseTriggered": false
+        },
+        {
+            "CircuitGroupID": 16,
+            "PowerProduction": 0,
+            "PowerConsumed": 0,
+            "PowerCapacity": 0,
+            "PowerMaxConsumed": 12,
+            "BatteryInput": 0,
+            "BatteryOutput": 0,
+            "BatteryDifferential": 0,
+            "BatteryPercent": 0,
+            "BatteryCapacity": 0,
+            "BatteryTimeEmpty": "00:00:00",
+            "BatteryTimeFull": "00:00:00",
+            "AssociatedCircuits": [
+                297
+            ],
+            "FuseTriggered": false
+        },
+        {
+            "CircuitGroupID": 17,
+            "PowerProduction": 0,
+            "PowerConsumed": 0,
+            "PowerCapacity": 0,
+            "PowerMaxConsumed": 12,
+            "BatteryInput": 0,
+            "BatteryOutput": 0,
+            "BatteryDifferential": 0,
+            "BatteryPercent": 0,
+            "BatteryCapacity": 0,
+            "BatteryTimeEmpty": "00:00:00",
+            "BatteryTimeFull": "00:00:00",
+            "AssociatedCircuits": [
+                302
+            ],
+            "FuseTriggered": false
+        },
+        {
+            "CircuitGroupID": 18,
+            "PowerProduction": 0,
+            "PowerConsumed": 0,
+            "PowerCapacity": 0,
+            "PowerMaxConsumed": 12,
+            "BatteryInput": 0,
+            "BatteryOutput": 0,
+            "BatteryDifferential": 0,
+            "BatteryPercent": 0,
+            "BatteryCapacity": 0,
+            "BatteryTimeEmpty": "00:00:00",
+            "BatteryTimeFull": "00:00:00",
+            "AssociatedCircuits": [
+                303
+            ],
+            "FuseTriggered": false
+        },
+        {
+            "CircuitGroupID": 19,
+            "PowerProduction": 0,
+            "PowerConsumed": 0,
+            "PowerCapacity": 0,
+            "PowerMaxConsumed": 12,
+            "BatteryInput": 0,
+            "BatteryOutput": 0,
+            "BatteryDifferential": 0,
+            "BatteryPercent": 0,
+            "BatteryCapacity": 0,
+            "BatteryTimeEmpty": "00:00:00",
+            "BatteryTimeFull": "00:00:00",
+            "AssociatedCircuits": [
+                308
+            ],
+            "FuseTriggered": false
+        },
+        {
+            "CircuitGroupID": 20,
+            "PowerProduction": 0,
+            "PowerConsumed": 0,
+            "PowerCapacity": 0,
+            "PowerMaxConsumed": 12,
+            "BatteryInput": 0,
+            "BatteryOutput": 0,
+            "BatteryDifferential": 0,
+            "BatteryPercent": 0,
+            "BatteryCapacity": 0,
+            "BatteryTimeEmpty": "00:00:00",
+            "BatteryTimeFull": "00:00:00",
+            "AssociatedCircuits": [
+                309
+            ],
+            "FuseTriggered": false
+        },
+        {
+            "CircuitGroupID": 21,
+            "PowerProduction": 0,
+            "PowerConsumed": 0,
+            "PowerCapacity": 0,
+            "PowerMaxConsumed": 12,
+            "BatteryInput": 0,
+            "BatteryOutput": 0,
+            "BatteryDifferential": 0,
+            "BatteryPercent": 0,
+            "BatteryCapacity": 0,
+            "BatteryTimeEmpty": "00:00:00",
+            "BatteryTimeFull": "00:00:00",
+            "AssociatedCircuits": [
+                314
+            ],
+            "FuseTriggered": false
+        },
+        {
+            "CircuitGroupID": 22,
+            "PowerProduction": 0,
+            "PowerConsumed": 0,
+            "PowerCapacity": 0,
+            "PowerMaxConsumed": 12,
+            "BatteryInput": 0,
+            "BatteryOutput": 0,
+            "BatteryDifferential": 0,
+            "BatteryPercent": 0,
+            "BatteryCapacity": 0,
+            "BatteryTimeEmpty": "00:00:00",
+            "BatteryTimeFull": "00:00:00",
+            "AssociatedCircuits": [
+                315
+            ],
+            "FuseTriggered": false
+        },
+        {
+            "CircuitGroupID": 23,
+            "PowerProduction": 0,
+            "PowerConsumed": 0,
+            "PowerCapacity": 0,
+            "PowerMaxConsumed": 12,
+            "BatteryInput": 0,
+            "BatteryOutput": 0,
+            "BatteryDifferential": 0,
+            "BatteryPercent": 0,
+            "BatteryCapacity": 0,
+            "BatteryTimeEmpty": "00:00:00",
+            "BatteryTimeFull": "00:00:00",
+            "AssociatedCircuits": [
+                320
+            ],
+            "FuseTriggered": false
+        },
+        {
+            "CircuitGroupID": 24,
+            "PowerProduction": 0,
+            "PowerConsumed": 0,
+            "PowerCapacity": 0,
+            "PowerMaxConsumed": 12,
+            "BatteryInput": 0,
+            "BatteryOutput": 0,
+            "BatteryDifferential": 0,
+            "BatteryPercent": 0,
+            "BatteryCapacity": 0,
+            "BatteryTimeEmpty": "00:00:00",
+            "BatteryTimeFull": "00:00:00",
+            "AssociatedCircuits": [
+                321
+            ],
+            "FuseTriggered": false
+        },
+        {
+            "CircuitGroupID": 25,
+            "PowerProduction": 0,
+            "PowerConsumed": 0,
+            "PowerCapacity": 0,
+            "PowerMaxConsumed": 12,
+            "BatteryInput": 0,
+            "BatteryOutput": 0,
+            "BatteryDifferential": 0,
+            "BatteryPercent": 0,
+            "BatteryCapacity": 0,
+            "BatteryTimeEmpty": "00:00:00",
+            "BatteryTimeFull": "00:00:00",
+            "AssociatedCircuits": [
+                326
+            ],
+            "FuseTriggered": false
+        },
+        {
+            "CircuitGroupID": 26,
+            "PowerProduction": 0,
+            "PowerConsumed": 0,
+            "PowerCapacity": 0,
+            "PowerMaxConsumed": 12,
+            "BatteryInput": 0,
+            "BatteryOutput": 0,
+            "BatteryDifferential": 0,
+            "BatteryPercent": 0,
+            "BatteryCapacity": 0,
+            "BatteryTimeEmpty": "00:00:00",
+            "BatteryTimeFull": "00:00:00",
+            "AssociatedCircuits": [
+                327
+            ],
+            "FuseTriggered": false
+        },
+        {
+            "CircuitGroupID": 27,
+            "PowerProduction": 0,
+            "PowerConsumed": 0,
+            "PowerCapacity": 0,
+            "PowerMaxConsumed": 12,
+            "BatteryInput": 0,
+            "BatteryOutput": 0,
+            "BatteryDifferential": 0,
+            "BatteryPercent": 0,
+            "BatteryCapacity": 0,
+            "BatteryTimeEmpty": "00:00:00",
+            "BatteryTimeFull": "00:00:00",
+            "AssociatedCircuits": [
+                332
+            ],
+            "FuseTriggered": false
+        },
+        {
+            "CircuitGroupID": 28,
+            "PowerProduction": 0,
+            "PowerConsumed": 0,
+            "PowerCapacity": 0,
+            "PowerMaxConsumed": 12,
+            "BatteryInput": 0,
+            "BatteryOutput": 0,
+            "BatteryDifferential": 0,
+            "BatteryPercent": 0,
+            "BatteryCapacity": 0,
+            "BatteryTimeEmpty": "00:00:00",
+            "BatteryTimeFull": "00:00:00",
+            "AssociatedCircuits": [
+                333
+            ],
+            "FuseTriggered": false
+        },
+        {
+            "CircuitGroupID": 29,
+            "PowerProduction": 0,
+            "PowerConsumed": 0,
+            "PowerCapacity": 0,
+            "PowerMaxConsumed": 12,
+            "BatteryInput": 0,
+            "BatteryOutput": 0,
+            "BatteryDifferential": 0,
+            "BatteryPercent": 0,
+            "BatteryCapacity": 0,
+            "BatteryTimeEmpty": "00:00:00",
+            "BatteryTimeFull": "00:00:00",
+            "AssociatedCircuits": [
+                338
+            ],
+            "FuseTriggered": false
+        },
+        {
+            "CircuitGroupID": 30,
+            "PowerProduction": 0,
+            "PowerConsumed": 0,
+            "PowerCapacity": 0,
+            "PowerMaxConsumed": 12,
+            "BatteryInput": 0,
+            "BatteryOutput": 0,
+            "BatteryDifferential": 0,
+            "BatteryPercent": 0,
+            "BatteryCapacity": 0,
+            "BatteryTimeEmpty": "00:00:00",
+            "BatteryTimeFull": "00:00:00",
+            "AssociatedCircuits": [
+                339
+            ],
+            "FuseTriggered": false
+        },
+        {
+            "CircuitGroupID": 31,
+            "PowerProduction": 0,
+            "PowerConsumed": 0,
+            "PowerCapacity": 0,
+            "PowerMaxConsumed": 12,
+            "BatteryInput": 0,
+            "BatteryOutput": 0,
+            "BatteryDifferential": 0,
+            "BatteryPercent": 0,
+            "BatteryCapacity": 0,
+            "BatteryTimeEmpty": "00:00:00",
+            "BatteryTimeFull": "00:00:00",
+            "AssociatedCircuits": [
+                344
+            ],
+            "FuseTriggered": false
+        },
+        {
+            "CircuitGroupID": 32,
+            "PowerProduction": 0,
+            "PowerConsumed": 0,
+            "PowerCapacity": 0,
+            "PowerMaxConsumed": 12,
+            "BatteryInput": 0,
+            "BatteryOutput": 0,
+            "BatteryDifferential": 0,
+            "BatteryPercent": 0,
+            "BatteryCapacity": 0,
+            "BatteryTimeEmpty": "00:00:00",
+            "BatteryTimeFull": "00:00:00",
+            "AssociatedCircuits": [
+                345
+            ],
+            "FuseTriggered": false
+        },
+        {
+            "CircuitGroupID": 33,
+            "PowerProduction": 0,
+            "PowerConsumed": 0,
+            "PowerCapacity": 0,
+            "PowerMaxConsumed": 12,
+            "BatteryInput": 0,
+            "BatteryOutput": 0,
+            "BatteryDifferential": 0,
+            "BatteryPercent": 0,
+            "BatteryCapacity": 0,
+            "BatteryTimeEmpty": "00:00:00",
+            "BatteryTimeFull": "00:00:00",
+            "AssociatedCircuits": [
+                350
+            ],
+            "FuseTriggered": false
+        },
+        {
+            "CircuitGroupID": 34,
+            "PowerProduction": 0,
+            "PowerConsumed": 0,
+            "PowerCapacity": 0,
+            "PowerMaxConsumed": 12,
+            "BatteryInput": 0,
+            "BatteryOutput": 0,
+            "BatteryDifferential": 0,
+            "BatteryPercent": 0,
+            "BatteryCapacity": 0,
+            "BatteryTimeEmpty": "00:00:00",
+            "BatteryTimeFull": "00:00:00",
+            "AssociatedCircuits": [
+                351
+            ],
+            "FuseTriggered": false
+        },
+        {
+            "CircuitGroupID": 35,
+            "PowerProduction": 0,
+            "PowerConsumed": 0,
+            "PowerCapacity": 0,
+            "PowerMaxConsumed": 12,
+            "BatteryInput": 0,
+            "BatteryOutput": 0,
+            "BatteryDifferential": 0,
+            "BatteryPercent": 0,
+            "BatteryCapacity": 0,
+            "BatteryTimeEmpty": "00:00:00",
+            "BatteryTimeFull": "00:00:00",
+            "AssociatedCircuits": [
+                356
+            ],
+            "FuseTriggered": false
+        },
+        {
+            "CircuitGroupID": 36,
+            "PowerProduction": 0,
+            "PowerConsumed": 0,
+            "PowerCapacity": 0,
+            "PowerMaxConsumed": 12,
+            "BatteryInput": 0,
+            "BatteryOutput": 0,
+            "BatteryDifferential": 0,
+            "BatteryPercent": 0,
+            "BatteryCapacity": 0,
+            "BatteryTimeEmpty": "00:00:00",
+            "BatteryTimeFull": "00:00:00",
+            "AssociatedCircuits": [
+                357
+            ],
+            "FuseTriggered": false
+        },
+        {
+            "CircuitGroupID": 37,
+            "PowerProduction": 0,
+            "PowerConsumed": 0,
+            "PowerCapacity": 0,
+            "PowerMaxConsumed": 12,
+            "BatteryInput": 0,
+            "BatteryOutput": 0,
+            "BatteryDifferential": 0,
+            "BatteryPercent": 0,
+            "BatteryCapacity": 0,
+            "BatteryTimeEmpty": "00:00:00",
+            "BatteryTimeFull": "00:00:00",
+            "AssociatedCircuits": [
+                362
+            ],
+            "FuseTriggered": false
+        },
+        {
+            "CircuitGroupID": 38,
+            "PowerProduction": 0,
+            "PowerConsumed": 0,
+            "PowerCapacity": 0,
+            "PowerMaxConsumed": 12,
+            "BatteryInput": 0,
+            "BatteryOutput": 0,
+            "BatteryDifferential": 0,
+            "BatteryPercent": 0,
+            "BatteryCapacity": 0,
+            "BatteryTimeEmpty": "00:00:00",
+            "BatteryTimeFull": "00:00:00",
+            "AssociatedCircuits": [
+                363
+            ],
+            "FuseTriggered": false
+        },
+        {
+            "CircuitGroupID": 39,
+            "PowerProduction": 0,
+            "PowerConsumed": 0,
+            "PowerCapacity": 0,
+            "PowerMaxConsumed": 12,
+            "BatteryInput": 0,
+            "BatteryOutput": 0,
+            "BatteryDifferential": 0,
+            "BatteryPercent": 0,
+            "BatteryCapacity": 0,
+            "BatteryTimeEmpty": "00:00:00",
+            "BatteryTimeFull": "00:00:00",
+            "AssociatedCircuits": [
+                368
+            ],
+            "FuseTriggered": false
+        },
+        {
+            "CircuitGroupID": 40,
+            "PowerProduction": 0,
+            "PowerConsumed": 0,
+            "PowerCapacity": 0,
+            "PowerMaxConsumed": 12,
+            "BatteryInput": 0,
+            "BatteryOutput": 0,
+            "BatteryDifferential": 0,
+            "BatteryPercent": 0,
+            "BatteryCapacity": 0,
+            "BatteryTimeEmpty": "00:00:00",
+            "BatteryTimeFull": "00:00:00",
+            "AssociatedCircuits": [
+                369
+            ],
+            "FuseTriggered": false
+        },
+        {
+            "CircuitGroupID": 41,
+            "PowerProduction": 0,
+            "PowerConsumed": 0,
+            "PowerCapacity": 0,
+            "PowerMaxConsumed": 12,
+            "BatteryInput": 0,
+            "BatteryOutput": 0,
+            "BatteryDifferential": 0,
+            "BatteryPercent": 0,
+            "BatteryCapacity": 0,
+            "BatteryTimeEmpty": "00:00:00",
+            "BatteryTimeFull": "00:00:00",
+            "AssociatedCircuits": [
+                374
+            ],
+            "FuseTriggered": false
+        },
+        {
+            "CircuitGroupID": 42,
+            "PowerProduction": 0,
+            "PowerConsumed": 0,
+            "PowerCapacity": 0,
+            "PowerMaxConsumed": 12,
+            "BatteryInput": 0,
+            "BatteryOutput": 0,
+            "BatteryDifferential": 0,
+            "BatteryPercent": 0,
+            "BatteryCapacity": 0,
+            "BatteryTimeEmpty": "00:00:00",
+            "BatteryTimeFull": "00:00:00",
+            "AssociatedCircuits": [
+                375
+            ],
+            "FuseTriggered": false
+        },
+        {
+            "CircuitGroupID": 43,
+            "PowerProduction": 0,
+            "PowerConsumed": 0,
+            "PowerCapacity": 0,
+            "PowerMaxConsumed": 12,
+            "BatteryInput": 0,
+            "BatteryOutput": 0,
+            "BatteryDifferential": 0,
+            "BatteryPercent": 0,
+            "BatteryCapacity": 0,
+            "BatteryTimeEmpty": "00:00:00",
+            "BatteryTimeFull": "00:00:00",
+            "AssociatedCircuits": [
+                380
+            ],
+            "FuseTriggered": false
+        },
+        {
+            "CircuitGroupID": 44,
+            "PowerProduction": 0,
+            "PowerConsumed": 0,
+            "PowerCapacity": 0,
+            "PowerMaxConsumed": 12,
+            "BatteryInput": 0,
+            "BatteryOutput": 0,
+            "BatteryDifferential": 0,
+            "BatteryPercent": 0,
+            "BatteryCapacity": 0,
+            "BatteryTimeEmpty": "00:00:00",
+            "BatteryTimeFull": "00:00:00",
+            "AssociatedCircuits": [
+                381
+            ],
+            "FuseTriggered": false
+        },
+        {
+            "CircuitGroupID": 45,
+            "PowerProduction": 0,
+            "PowerConsumed": 0,
+            "PowerCapacity": 0,
+            "PowerMaxConsumed": 12,
+            "BatteryInput": 0,
+            "BatteryOutput": 0,
+            "BatteryDifferential": 0,
+            "BatteryPercent": 0,
+            "BatteryCapacity": 0,
+            "BatteryTimeEmpty": "00:00:00",
+            "BatteryTimeFull": "00:00:00",
+            "AssociatedCircuits": [
+                386
+            ],
+            "FuseTriggered": false
+        },
+        {
+            "CircuitGroupID": 46,
+            "PowerProduction": 0,
+            "PowerConsumed": 0,
+            "PowerCapacity": 0,
+            "PowerMaxConsumed": 12,
+            "BatteryInput": 0,
+            "BatteryOutput": 0,
+            "BatteryDifferential": 0,
+            "BatteryPercent": 0,
+            "BatteryCapacity": 0,
+            "BatteryTimeEmpty": "00:00:00",
+            "BatteryTimeFull": "00:00:00",
+            "AssociatedCircuits": [
+                387
+            ],
+            "FuseTriggered": false
+        },
+        {
+            "CircuitGroupID": 47,
+            "PowerProduction": 0,
+            "PowerConsumed": 0,
+            "PowerCapacity": 0,
+            "PowerMaxConsumed": 90,
+            "BatteryInput": 0,
+            "BatteryOutput": 0,
+            "BatteryDifferential": 0,
+            "BatteryPercent": 0,
+            "BatteryCapacity": 0,
+            "BatteryTimeEmpty": "00:00:00",
+            "BatteryTimeFull": "00:00:00",
+            "AssociatedCircuits": [
+                39
+            ],
+            "FuseTriggered": false
+        }
+    ],
+    "x-opt-enqueued-time": 2025-07-07T19: 56: 00.471Z,
+    "x-opt-sequence-number": 27,
+    "x-opt-offset": 4242184,
+    "x-opt-publisher": 0,
+    "x-opt-partition-key": 0
+}

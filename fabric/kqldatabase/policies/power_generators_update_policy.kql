@@ -1,0 +1,105 @@
+// =============================================================================
+// POWER GENERATORS UPDATE POLICY
+// =============================================================================
+// Purpose: Real-time ingestion from RawData to power_generators table
+// Business Context: Engineering-001 - Power Network Analysis
+// Data Source: RawData table where endpoint = 'getGenerators'
+// Trigger: Every time new data arrives in RawData
+// =============================================================================
+
+// Drop existing policy if it exists
+.drop table power_generators policy update
+
+// Create the update policy for power_generators using the parse_generators_data function
+.alter table power_generators policy update
+```
+[
+    {
+        "IsEnabled": true,
+        "Source": "RawData",
+        "Query": "parse_generators_data()",
+        "IsTransactional": false,
+        "ManagedIdentity": null,
+        "PropagateIngestionProperties": false
+    }
+]
+```
+
+// =============================================================================
+// POLICY EXPLANATION
+// =============================================================================
+// This update policy:
+// 1. Uses the parse_generators_data() function for data transformation
+// 2. Provides clean separation of concerns (policy vs. parsing logic)
+// 3. Enables easier maintenance and testing of parsing logic
+// 4. Allows reuse of parsing logic in other contexts
+// 5. Simplifies policy definition and readability
+// 
+// The parse_generators_data() function handles:
+// - Filtering RawData for 'getGenerators' endpoint
+// - Parsing JSON data structure
+// - Extracting generator information from the data array
+// - Transforming and calculating derived fields
+// - Handling missing or null values with appropriate defaults
+// - Converting data types to match table schema
+// - Adding ingestion timestamp for audit trail
+// =============================================================================
+
+// =============================================================================
+// MONITORING AND MAINTENANCE
+// =============================================================================
+// Monitor policy status:
+// .show table power_generators policy update
+
+// Check policy performance:
+// .show table power_generators policy update statistics
+
+// Disable policy if needed:
+// .alter table power_generators policy update 
+//   '[{"IsEnabled": false, "Source": "RawData", "Query": "...", "IsTransactional": false}]'
+
+// View recent ingestion:
+// power_generators
+// | where ingestion_time >= ago(1h)
+// | summarize count() by bin(ingestion_time, 1m)
+// | order by ingestion_time desc
+
+// =============================================================================
+// PERFORMANCE CONSIDERATIONS
+// =============================================================================
+// 1. Policy processes data in real-time as it arrives
+// 2. JSON parsing can be CPU intensive for large datasets
+// 3. Consider batching for high-frequency updates
+// 4. Monitor for ingestion lag and processing errors
+// 5. Use appropriate data types to minimize storage overhead
+// =============================================================================
+
+// =============================================================================
+// ERROR HANDLING
+// =============================================================================
+// Common issues and solutions:
+// 1. JSON parsing errors: Check data format and add error handling
+// 2. Data type conversion errors: Use safe conversion functions
+// 3. Missing fields: Provide default values or handle nulls
+// 4. Policy disabled: Check policy status and re-enable if needed
+// 5. Ingestion lag: Monitor table ingestion statistics
+// =============================================================================
+
+// Test the policy with a sample query using the function
+// parse_generators_data()
+// | where timestamp >= ago(1h)
+// | take 5
+// | project 
+//     timestamp,
+//     server,
+//     generator_id,
+//     generator_name,
+//     generator_class,
+//     power_production_potential,
+//     current_production,
+//     production_efficiency
+
+// Validate function output matches table schema
+// parse_generators_data()
+// | take 1
+// | getschema

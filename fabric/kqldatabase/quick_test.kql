@@ -1,0 +1,229 @@
+// =============================================================================
+// QUICK TEST SCRIPT FOR FICSIT KQL FUNCTIONS
+// =============================================================================
+// Purpose: Quick validation of KQL functions and data flow
+// Run this script to test the implementation before full deployment
+// =============================================================================
+
+print "🧪 Starting Ficsit KQL Quick Tests..."
+print "Test Time: " + tostring(now())
+
+// =============================================================================
+// TEST 1: CHECK IF RAWDATA HAS GENERATOR DATA
+// =============================================================================
+print "🔍 Test 1: Checking RawData for generator data..."
+
+RawData
+| where endpoint == "getGenerators"
+| where timestamp >= ago(24h)
+| take 1
+| project timestamp, endpoint, server, data_sample = substring(tostring(data), 0, 100)
+| extend test_result = case(
+    isnotempty(data_sample), "✅ PASS: Generator data found in RawData",
+    "❌ FAIL: No generator data found in RawData"
+)
+| project test_result
+
+// =============================================================================
+// TEST 2: TEST FUNCTION CREATION (CREATE FUNCTION FIRST)
+// =============================================================================
+print "🔧 Test 2: Creating and testing parse_generators_data function..."
+
+// Create the function (if not already created)
+.create-or-alter function parse_generators_data() {
+    RawData
+    | where endpoint == 'getGenerators'
+    | extend parsed_data = parse_json(data)
+    | mv-expand generator = parsed_data
+    | where generator != ''
+    | extend generator_obj = parse_json(generator)
+    | project 
+        timestamp = todatetime(timestamp),
+        server = tostring(server),
+        generator_id = tostring(generator_obj.ID),
+        generator_name = tostring(generator_obj.Name),
+        generator_class = tostring(generator_obj.ClassName),
+        circuit_group_id = tolong(generator_obj.PowerInfo.CircuitGroupID),
+        circuit_id = tolong(generator_obj.PowerInfo.CircuitID),
+        power_production_potential = toreal(generator_obj.PowerProductionPotential),
+        current_production = toreal(generator_obj.BaseProd),
+        production_efficiency = case(
+            toreal(generator_obj.PowerProductionPotential) > 0, 
+            toreal(generator_obj.BaseProd) / toreal(generator_obj.PowerProductionPotential), 
+            0.0
+        ),
+        load_percentage = tolong(generator_obj.LoadPercentage),
+        fuel_resource = tostring(generator_obj.FuelResource),
+        fuel_amount = toreal(generator_obj.FuelAmount),
+        fuel_max_amount = case(
+            array_length(generator_obj.FuelInventory) > 0, 
+            toreal(generator_obj.FuelInventory[0].MaxAmount), 
+            0.0
+        ),
+        fuel_percentage = case(
+            toreal(generator_obj.FuelInventory[0].MaxAmount) > 0, 
+            toreal(generator_obj.FuelAmount) / toreal(generator_obj.FuelInventory[0].MaxAmount), 
+            0.0
+        ),
+        is_full_speed = tobool(generator_obj.IsFullSpeed),
+        can_start = tobool(generator_obj.CanStart),
+        is_producing = case(toreal(generator_obj.BaseProd) > 0, true, false),
+        somersloops = tolong(generator_obj.Somersloops),
+        power_shards = tolong(generator_obj.PowerShards),
+        location_x = toreal(generator_obj.location.x),
+        location_y = toreal(generator_obj.location.y),
+        location_z = toreal(generator_obj.location.z),
+        fuse_triggered = tobool(generator_obj.PowerInfo.FuseTriggered),
+        power_consumed = toreal(generator_obj.PowerInfo.PowerConsumed),
+        max_power_consumed = toreal(generator_obj.PowerInfo.MaxPowerConsumed),
+        nuclear_warning = tostring(generator_obj.NuclearWarning),
+        geo_min_power = toreal(generator_obj.GeoMinPower),
+        geo_max_power = toreal(generator_obj.GeoMaxPower),
+        ingestion_time = now()
+    | where isnotempty(generator_id)
+}
+
+print "✅ Function created successfully"
+
+// =============================================================================
+// TEST 3: TEST FUNCTION EXECUTION
+// =============================================================================
+print "⚡ Test 3: Testing function execution..."
+
+parse_generators_data()
+| where timestamp >= ago(24h)
+| take 1
+| project timestamp, generator_id, generator_name, current_production, production_efficiency
+| extend test_result = case(
+    isnotempty(generator_id), "✅ PASS: Function executes and returns data",
+    "❌ FAIL: Function returns no data"
+)
+| project test_result
+
+// =============================================================================
+// TEST 4: DATA QUALITY VALIDATION
+// =============================================================================
+print "🔍 Test 4: Data quality validation..."
+
+parse_generators_data()
+| where timestamp >= ago(24h)
+| summarize 
+    total_records = count(),
+    null_generator_ids = countif(isnull(generator_id) or generator_id == ""),
+    null_names = countif(isnull(generator_name) or generator_name == ""),
+    invalid_efficiency = countif(production_efficiency < 0 or production_efficiency > 1),
+    negative_production = countif(current_production < 0)
+| extend 
+    data_quality_score = case(
+        null_generator_ids == 0 and null_names == 0 and invalid_efficiency == 0 and negative_production == 0, 100,
+        null_generator_ids + null_names + invalid_efficiency + negative_production < total_records * 0.1, 80,
+        50
+    ),
+    test_result = case(
+        data_quality_score >= 80, "✅ PASS: Data quality is good",
+        "⚠️ WARN: Data quality issues detected"
+    )
+| project test_result, total_records, null_generator_ids, null_names, invalid_efficiency, negative_production, data_quality_score
+
+// =============================================================================
+// TEST 5: PERFORMANCE CHECK
+// =============================================================================
+print "🏎️ Test 5: Performance check..."
+
+let start_time = now();
+parse_generators_data()
+| where timestamp >= ago(1h)
+| summarize record_count = count()
+| extend 
+    execution_time = now() - start_time,
+    performance_rating = case(
+        execution_time < 5s, "✅ EXCELLENT: < 5 seconds",
+        execution_time < 10s, "✅ GOOD: < 10 seconds",
+        execution_time < 30s, "⚠️ FAIR: < 30 seconds",
+        "❌ POOR: > 30 seconds"
+    )
+| project performance_rating, execution_time, record_count
+
+// =============================================================================
+// TEST 6: BUSINESS LOGIC VALIDATION
+// =============================================================================
+print "📊 Test 6: Business logic validation..."
+
+parse_generators_data()
+| where timestamp >= ago(1h)
+| where power_production_potential > 0
+| extend 
+    manual_efficiency = current_production / power_production_potential,
+    efficiency_difference = abs(production_efficiency - manual_efficiency)
+| summarize 
+    max_difference = max(efficiency_difference),
+    avg_difference = avg(efficiency_difference)
+| extend test_result = case(
+    max_difference < 0.001, "✅ PASS: Efficiency calculations are accurate",
+    "❌ FAIL: Efficiency calculation errors detected"
+)
+| project test_result, max_difference, avg_difference
+
+// =============================================================================
+// TEST SUMMARY
+// =============================================================================
+print "📊 Test Summary Complete!"
+print "Next Steps:"
+print "1. If all tests pass, proceed with table creation"
+print "2. If tests fail, check RawData format and function logic"
+print "3. Run full deployment script after validation"
+print "4. Monitor ingestion performance in production"
+
+// =============================================================================
+// QUICK DEPLOYMENT TEST (OPTIONAL)
+// =============================================================================
+print "🚀 Optional: Quick table creation test..."
+
+// Create a minimal test table
+.create table test_power_generators (
+    timestamp: datetime,
+    generator_id: string,
+    generator_name: string,
+    current_production: real,
+    production_efficiency: real
+)
+
+// Test inserting data from function
+.set-or-append test_power_generators <|
+parse_generators_data()
+| where timestamp >= ago(1h)
+| take 5
+| project timestamp, generator_id, generator_name, current_production, production_efficiency
+
+// Verify data was inserted
+test_power_generators
+| summarize record_count = count()
+| extend test_result = case(
+    record_count > 0, "✅ PASS: Data insertion successful",
+    "❌ FAIL: Data insertion failed"
+)
+| project test_result, record_count
+
+// Clean up test table
+.drop table test_power_generators ifexists
+
+print "🎉 Quick tests completed!"
+print "Check results above for any failures or warnings"
+
+// =============================================================================
+// TROUBLESHOOTING COMMANDS
+// =============================================================================
+// If tests fail, run these commands to investigate:
+
+// Check RawData structure:
+// RawData | where endpoint == "getGenerators" | take 1 | project data
+
+// Check function exists:
+// .show functions | where Name == "parse_generators_data"
+
+// Check for JSON parsing issues:
+// RawData | where endpoint == "getGenerators" | extend test_parse = parse_json(data) | where isnull(test_parse) | take 5
+
+// Check execution errors:
+// .show commands | where StartedOn >= ago(1h) | where State == "Failed" | order by StartedOn desc
+// =============================================================================

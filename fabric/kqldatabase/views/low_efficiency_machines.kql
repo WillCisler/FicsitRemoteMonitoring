@@ -1,0 +1,178 @@
+// =============================================================================
+// LOW EFFICIENCY MACHINES VIEW
+// =============================================================================
+// Purpose: Identify machines with lowest efficiency for optimization
+// Business Context: Engineering-003 - Production Optimisation
+// Data Source: factory_machines + production_items tables
+// Update Frequency: Real-time (view is computed on query)
+// =============================================================================
+
+// Drop existing function if it exists
+.drop function low_efficiency_machines ifexists
+
+// Create the low_efficiency_machines function (acts as a view)
+.create function low_efficiency_machines() {
+    factory_machines
+| where timestamp >= ago(24h)  // Focus on recent data
+| where is_producing == true   // Only consider active machines
+| summarize 
+    // Efficiency metrics
+    avg_production_efficiency = avg(production_efficiency),
+    avg_power_efficiency = avg(power_efficiency),
+    min_production_efficiency = min(production_efficiency),
+    max_production_efficiency = max(production_efficiency),
+    efficiency_variance = variance(production_efficiency),
+    
+    // Performance metrics
+    avg_manufacturing_speed = avg(manufacturing_speed),
+    avg_power_consumed = avg(power_consumed),
+    max_power_consumed = max(max_power_consumed),
+    
+    // Status indicators
+    total_records = count(),
+    paused_count = countif(is_paused == true),
+    fuse_triggered_count = countif(fuse_triggered == true),
+    
+    // Location and identification
+    machine_name = any(machine_name),
+    machine_class = any(machine_class),
+    recipe = any(recipe),
+    location_x = any(location_x),
+    location_y = any(location_y),
+    location_z = any(location_z),
+    circuit_group_id = any(circuit_group_id),
+    circuit_id = any(circuit_id),
+    
+    // Timestamps
+    first_seen = min(timestamp),
+    last_seen = max(timestamp)
+  by machine_id
+| extend 
+    // Calculated efficiency categories
+    efficiency_category = case(
+        avg_production_efficiency >= 0.95, "Excellent",
+        avg_production_efficiency >= 0.80, "Good",
+        avg_production_efficiency >= 0.65, "Fair",
+        avg_production_efficiency >= 0.50, "Poor",
+        "Critical"
+    ),
+    
+    // Power efficiency rating
+    power_efficiency_rating = case(
+        avg_power_efficiency >= 0.90, "Optimal",
+        avg_power_efficiency >= 0.75, "Good",
+        avg_power_efficiency >= 0.60, "Moderate",
+        avg_power_efficiency >= 0.45, "Poor",
+        "Inefficient"
+    ),
+    
+    // Optimization priority (higher = more urgent)
+    optimization_priority = case(
+        avg_production_efficiency < 0.50, 100,
+        avg_production_efficiency < 0.65, 75,
+        avg_production_efficiency < 0.80, 50,
+        avg_production_efficiency < 0.90, 25,
+        0
+    ),
+    
+    // Location string for easy reference
+    location_string = strcat(
+        "X:", tostring(toint(location_x)), 
+        " Y:", tostring(toint(location_y)), 
+        " Z:", tostring(toint(location_z))
+    ),
+    
+    // Issues summary
+    issues_detected = case(
+        fuse_triggered_count > 0, "Power Issues",
+        paused_count > 0, "Paused Operations",
+        efficiency_variance > 0.1, "Unstable Performance",
+        avg_production_efficiency < 0.8, "Low Efficiency",
+        "Operating Normally"
+    ),
+    
+    // Recommendations
+    recommendations = case(
+        avg_production_efficiency < 0.5, "Immediate attention required - Check power supply and configuration",
+        avg_production_efficiency < 0.65, "Consider upgrading or optimizing recipe",
+        avg_production_efficiency < 0.8, "Monitor closely - May need maintenance",
+        avg_production_efficiency < 0.9, "Minor optimization opportunity available",
+        "Operating within acceptable parameters"
+    ),
+    
+    // Data freshness indicator
+    data_freshness = case(
+        last_seen >= ago(1h), "Current",
+        last_seen >= ago(6h), "Recent",
+        last_seen >= ago(24h), "Stale",
+        "Outdated"
+    )
+    )
+    | where avg_production_efficiency < 0.95  // Focus on machines that can be improved
+    | order by optimization_priority desc, avg_production_efficiency asc
+}
+
+// Set function description for business users
+.alter function low_efficiency_machines docstring "Identifies production machines with efficiency below optimal levels, ranked by optimization priority. Provides actionable insights for factory floor improvements and maintenance scheduling."
+
+// =============================================================================
+// SAMPLE USAGE QUERIES
+// =============================================================================
+
+// Usage Example 1: Get top 10 machines needing immediate attention
+// low_efficiency_machines()
+// | where efficiency_category in ("Poor", "Critical")
+// | take 10
+// | project machine_name, machine_class, avg_production_efficiency, location_string, recommendations
+
+// Usage Example 2: Efficiency breakdown by machine class
+// low_efficiency_machines()
+// | summarize 
+//     machine_count = count(),
+//     avg_efficiency = avg(avg_production_efficiency),
+//     critical_machines = countif(efficiency_category == "Critical"),
+//     poor_machines = countif(efficiency_category == "Poor")
+//   by machine_class
+// | order by critical_machines desc, poor_machines desc
+
+// Usage Example 3: Get machines by location for maintenance planning
+// low_efficiency_machines()
+// | where optimization_priority >= 50
+// | extend location_zone = strcat("Zone_", tostring(toint(location_x/1000)), "_", tostring(toint(location_y/1000)))
+// | summarize 
+//     machines_to_check = count(),
+//     avg_priority = avg(optimization_priority),
+//     machine_list = make_list(machine_name)
+//   by location_zone
+// | order by avg_priority desc
+
+// Usage Example 4: Track efficiency improvements over time
+// low_efficiency_machines()
+// | where machine_id in (
+//     low_efficiency_machines() 
+//     | where efficiency_category in ("Poor", "Critical")
+//     | distinct machine_id
+// )
+// | project machine_id, machine_name, avg_production_efficiency, last_seen
+// | order by machine_id, last_seen desc
+
+// =============================================================================
+// BUSINESS VALUE
+// =============================================================================
+// This view provides:
+// 1. **Immediate Action Items**: Machines requiring urgent attention
+// 2. **Maintenance Planning**: Location-based optimization opportunities
+// 3. **Performance Monitoring**: Track efficiency trends over time
+// 4. **Resource Allocation**: Prioritize improvement efforts
+// 5. **Operational Insights**: Understand production bottlenecks
+// =============================================================================
+
+// =============================================================================
+// PERFORMANCE CONSIDERATIONS
+// =============================================================================
+// 1. Function queries underlying fact tables in real-time
+// 2. 24-hour time window balances accuracy with performance
+// 3. Consider materialized view for frequently accessed data
+// 4. Indexes on factory_machines table support efficient queries
+// 5. Complex calculations may benefit from pre-computation
+// =============================================================================

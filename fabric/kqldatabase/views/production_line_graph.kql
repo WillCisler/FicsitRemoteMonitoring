@@ -1,0 +1,215 @@
+// =============================================================================
+// PRODUCTION LINE GRAPH VIEW
+// =============================================================================
+// Purpose: Graph view of production lines to identify bottlenecks and issues
+// Business Context: Engineering-003 - Production Optimisation
+// Data Source: factory_machines + production_items tables
+// Update Frequency: Real-time (view is computed on query)
+// =============================================================================
+
+// Drop existing function if it exists
+.drop function production_line_graph ifexists
+
+// Create the production_line_graph function (acts as a view)
+.create function production_line_graph() {
+    // Get machine-to-item relationships
+    let machine_production = 
+        production_items pi
+        | where timestamp >= ago(6h)
+        | where is_base_resource == false  // Focus on manufactured items
+        | summarize 
+            total_production = sum(current_production),
+            max_production_capacity = sum(max_production),
+            avg_efficiency = avg(production_percentage),
+            bottleneck_count = countif(output_backed_up == true),
+            starved_count = countif(input_starved == true),
+            items_produced = make_set(item_name)
+        by machine_id, recipe_class;
+    
+    // Get machine details and combine with production
+    factory_machines fm
+    | where timestamp >= ago(6h)
+    | where is_producing == true
+    | summarize 
+        machine_name = any(machine_name),
+        machine_class = any(machine_class),
+        avg_production_efficiency = avg(production_efficiency),
+        avg_manufacturing_speed = avg(manufacturing_speed),
+        recipe = any(recipe),
+        recipe_class = any(recipe_class),
+        location_x = any(location_x),
+        location_y = any(location_y),
+        location_z = any(location_z),
+        power_consumed = avg(power_consumed),
+        max_power_consumed = avg(max_power_consumed),
+        last_seen = max(timestamp)
+    by machine_id
+    | join kind=leftouter machine_production on machine_id, recipe_class
+    | extend 
+        // Production line health
+        line_health = case(
+            bottleneck_count > 0 and starved_count > 0, "Critical - Both Input/Output Issues",
+            bottleneck_count > 0, "Bottleneck - Output Blocked",
+            starved_count > 0, "Starved - Input Shortage",
+            avg_production_efficiency < 0.6, "Inefficient",
+            avg_production_efficiency < 0.8, "Suboptimal",
+            "Healthy"
+        ),
+        
+        // Production flow status
+        flow_status = case(
+            bottleneck_count > 0, "Blocked",
+            starved_count > 0, "Starved",
+            avg_production_efficiency > 0.9, "Optimal",
+            avg_production_efficiency > 0.7, "Good",
+            "Slow"
+        ),
+        
+        // Line efficiency category
+        efficiency_tier = case(
+            avg_production_efficiency >= 0.95, "S-Tier",
+            avg_production_efficiency >= 0.85, "A-Tier", 
+            avg_production_efficiency >= 0.70, "B-Tier",
+            avg_production_efficiency >= 0.50, "C-Tier",
+            "D-Tier"
+        ),
+        
+        // Location zone for grouping
+        production_zone = strcat(
+            "Zone-", 
+            tostring(toint(location_x/2000)), 
+            "x", 
+            tostring(toint(location_y/2000))
+        ),
+        
+        // Issue priority
+        issue_priority = case(
+            bottleneck_count > 0 and starved_count > 0, 100,
+            bottleneck_count > 0, 80,
+            starved_count > 0, 75,
+            avg_production_efficiency < 0.5, 70,
+            avg_production_efficiency < 0.7, 50,
+            avg_production_efficiency < 0.85, 25,
+            0
+        ),
+        
+        // Recommendations for optimization
+        optimization_recommendation = case(
+            bottleneck_count > 0 and starved_count > 0, "Check both input supply and output routing",
+            bottleneck_count > 0, "Clear output congestion - add storage or faster belts",
+            starved_count > 0, "Increase input supply - check upstream production",
+            avg_production_efficiency < 0.6, "Major optimization needed - check recipe and power",
+            avg_production_efficiency < 0.8, "Minor tuning opportunity - check belt speeds",
+            "Operating well - consider for reference setup"
+        ),
+        
+        // Production capacity utilization
+        capacity_utilization = case(
+            max_production_capacity > 0,
+            (total_production / max_production_capacity) * 100,
+            0.0
+        ),
+        
+        // Location string for reference
+        location_reference = strcat(
+            "X:", tostring(toint(location_x)), 
+            " Y:", tostring(toint(location_y)), 
+            " Z:", tostring(toint(location_z))
+        )
+    | project 
+        machine_id,
+        machine_name,
+        machine_class,
+        recipe,
+        production_zone,
+        location_reference,
+        items_produced,
+        line_health,
+        flow_status,
+        efficiency_tier,
+        avg_production_efficiency,
+        capacity_utilization,
+        total_production,
+        max_production_capacity,
+        bottleneck_count,
+        starved_count,
+        issue_priority,
+        optimization_recommendation,
+        power_consumed,
+        max_power_consumed,
+        last_seen
+    | order by issue_priority desc, avg_production_efficiency asc
+}
+
+// Set function description for business users
+.alter function production_line_graph docstring "Graph visualization of production line connections showing bottlenecks, efficiency issues, and optimization opportunities. Provides actionable insights for production flow improvements."
+
+// =============================================================================
+// SAMPLE USAGE QUERIES  
+// =============================================================================
+
+// Usage Example 1: Critical production line issues
+// production_line_graph()
+// | where line_health contains "Critical" or issue_priority >= 70
+// | project machine_name, recipe, line_health, flow_status, optimization_recommendation, location_reference
+// | order by issue_priority desc
+
+// Usage Example 2: Production efficiency by zone
+// production_line_graph()
+// | summarize 
+//     machine_count = count(),
+//     avg_efficiency = avg(avg_production_efficiency),
+//     bottleneck_machines = countif(flow_status == "Blocked"),
+//     starved_machines = countif(flow_status == "Starved"),
+//     optimal_machines = countif(flow_status == "Optimal")
+// by production_zone
+// | extend efficiency_score = case(
+//     avg_efficiency > 0.9, "Excellent",
+//     avg_efficiency > 0.75, "Good", 
+//     avg_efficiency > 0.6, "Fair",
+//     "Poor"
+// )
+// | order by avg_efficiency desc
+
+// Usage Example 3: Production line bottleneck analysis
+// production_line_graph()
+// | where bottleneck_count > 0 or starved_count > 0
+// | summarize 
+//     affected_machines = count(),
+//     total_bottlenecks = sum(bottleneck_count),
+//     total_starved = sum(starved_count),
+//     recipes_affected = make_set(recipe)
+// by machine_class
+// | order by affected_machines desc
+
+// Usage Example 4: Efficiency tier distribution
+// production_line_graph()
+// | summarize 
+//     machine_count = count(),
+//     avg_capacity_utilization = avg(capacity_utilization),
+//     total_production = sum(total_production),
+//     avg_power_usage = avg(power_consumed)
+// by efficiency_tier
+// | order by case(efficiency_tier, "S-Tier", 5, "A-Tier", 4, "B-Tier", 3, "C-Tier", 2, "D-Tier", 1, 0) desc
+
+// Usage Example 5: Production line optimization roadmap
+// production_line_graph()
+// | where issue_priority > 0
+// | summarize 
+//     machines_to_optimize = count(),
+//     priority_score = avg(issue_priority),
+//     common_issues = make_set(line_health),
+//     optimization_actions = make_set(optimization_recommendation)
+// by production_zone
+// | order by priority_score desc
+
+// =============================================================================
+// BUSINESS VALUE
+// =============================================================================
+// This view provides:
+// 1. **Bottleneck Identification**: Pinpoint exact production flow issues
+// 2. **Zone-Based Optimization**: Area-focused improvement planning  
+// 3. **Efficiency Benchmarking**: Compare production line performance
+// 4. **Resource Allocation**: Prioritize optimization efforts by impact
+// 5. **Production Flow Visualization**: Understand manufacturing dependencies
+// =============================================================================

@@ -1,0 +1,506 @@
+// =============================================================================
+// FICSIT KQL DATABASE DEPLOYMENT SCRIPT
+// =============================================================================
+// Purpose: Complete deployment of all database objects
+// Business Context: Engineering-001, Engineering-002, Engineering-003
+// Deployment Order: Tables → Functions → Policies
+// =============================================================================
+
+.execute script <|
+print "🏭 Starting Ficsit KQL Database Deployment...";
+print "Database: ficsit-data";
+print "Deployment Time: " + tostring(now());
+
+// =============================================================================
+// PHASE 1: CREATE FACT TABLES
+// =============================================================================
+print "📊 Phase 1: Creating Fact Tables...";
+
+// Raw Data Table (Bronze Layer)
+.drop table RawData ifexists;
+.create table RawData (
+    timestamp: datetime,
+    server: string,
+    endpoint: string,
+    data: dynamic,
+    ingestion_time: datetime
+);
+.alter table RawData docstring "Raw data ingestion table (Bronze layer) for all FicsitRemote endpoints";
+
+// Power Generators Table
+.drop table power_generators ifexists;
+.create table power_generators (
+    timestamp: datetime,
+    server: string,
+    generator_id: string,
+    generator_name: string,
+    generator_class: string,
+    circuit_group_id: long,
+    circuit_id: long,
+    power_production_potential: real,
+    current_production: real,
+    production_efficiency: real,
+    load_percentage: long,
+    fuel_resource: string,
+    fuel_amount: real,
+    fuel_max_amount: real,
+    fuel_percentage: real,
+    is_full_speed: bool,
+    can_start: bool,
+    is_producing: bool,
+    somersloops: long,
+    power_shards: long,
+    location_x: real,
+    location_y: real,
+    location_z: real,
+    fuse_triggered: bool,
+    power_consumed: real,
+    max_power_consumed: real,
+    nuclear_warning: string,
+    geo_min_power: real,
+    geo_max_power: real,
+    ingestion_time: datetime
+);
+.alter table power_generators docstring "Individual power generator performance tracking for factory power network analysis. Enables monitoring of generator efficiency, fuel consumption, and power production trends over time.";
+// Factory Machines Table
+.drop table factory_machines ifexists;
+.create table factory_machines (
+    timestamp: datetime,
+    server: string,
+    machine_id: string,
+    machine_name: string,
+    machine_class: string,
+    recipe: string,
+    recipe_class: string,
+    production_efficiency: real,
+    manufacturing_speed: long,
+    is_producing: bool,
+    is_configured: bool,
+    is_paused: bool,
+    power_consumed: real,
+    max_power_consumed: real,
+    power_efficiency: real,
+    circuit_group_id: long,
+    circuit_id: long,
+    fuse_triggered: bool,
+    somersloops: long,
+    power_shards: long,
+    location_x: real,
+    location_y: real,
+    location_z: real,
+    primary_color: string,
+    secondary_color: string,
+    machine_type: string,
+    operational_status: string,
+    efficiency_category: string,
+    ingestion_time: datetime
+);
+.alter table factory_machines docstring "Production machine efficiency and operational status tracking";
+
+// Production Items Table
+.drop table production_items ifexists;
+.create table production_items (
+    timestamp: datetime,
+    server: string,
+    machine_id: string,
+    item_name: string,
+    item_class: string,
+    current_production: real,
+    max_production: long,
+    production_percentage: real,
+    current_amount: real,
+    max_amount: long,
+    inventory_percentage: real,
+    resource_type: string,
+    is_base_resource: bool,
+    is_bottleneck: bool,
+    production_rate_per_minute: real,
+    theoretical_max_rate: real,
+    efficiency_rating: string,
+    output_backed_up: bool,
+    input_starved: bool,
+    recipe_efficiency: real,
+    quality_modifier: real,
+    ingestion_time: datetime
+);
+.alter table production_items docstring "Individual item production rates and resource extraction tracking";
+
+// Power Grid Connections Table
+.drop table power_grid_connections ifexists;
+.create table power_grid_connections (
+    timestamp: datetime,
+    server: string,
+    circuit_group_id: long,
+    circuit_id: long,
+    associated_circuits: dynamic,
+    connected_generators: dynamic,
+    connected_machines: dynamic,
+    total_capacity: real,
+    total_consumption: real,
+    power_surplus: real,
+    power_efficiency: real,
+    battery_capacity: real,
+    battery_percentage: real,
+    battery_input: real,
+    battery_output: real,
+    battery_differential: real,
+    battery_time_empty: timespan,
+    battery_time_full: timespan,
+    fuse_triggered: bool,
+    connection_health: string,
+    connection_stability: real,
+    load_balancing_score: real,
+    redundancy_level: string,
+    critical_path_risk: real,
+    optimization_opportunities: dynamic,
+    alert_level: string,
+    alert_messages: dynamic,
+    network_segment: string,
+    is_primary_circuit: bool,
+    is_backup_circuit: bool,
+    ingestion_time: datetime
+);
+.alter table power_grid_connections docstring "Power grid topology and circuit connection tracking";
+
+print "✅ Phase 1 Complete: Fact tables created";
+
+// =============================================================================
+// PHASE 2: CREATE DIMENSION TABLES
+// =============================================================================
+print "📋 Phase 2: Creating Dimension Tables...";
+
+// Factory Items Dimension Table
+.drop table factory_items ifexists;
+.create table factory_items (
+    item_name: string,
+    item_class: string,
+    item_category: string,
+    item_subcategory: string,
+    is_extractable: bool,
+    is_manufacturable: bool,
+    is_fuel: bool,
+    is_consumable: bool,
+    base_production_rate: real,
+    stack_size: long,
+    resource_node_type: string,
+    resource_purity: string,
+    energy_value: real,
+    sink_points: long,
+    unlock_tier: long,
+    requires_research: bool,
+    item_description: string,
+    production_chain_level: long,
+    complexity_score: real,
+    market_value: real,
+    storage_requirements: string,
+    transportation_method: string,
+    quality_variants: dynamic,
+    recipe_inputs: dynamic,
+    recipe_outputs: dynamic,
+    alternative_recipes: dynamic,
+    production_buildings: dynamic,
+    last_updated: datetime,
+    data_source: string,
+    is_active: bool
+);
+.alter table factory_items docstring "Master reference table for all factory items and resources";
+
+print "✅ Phase 2 Complete: Dimension tables created";
+
+// =============================================================================
+// PHASE 3: CREATE FUNCTIONS
+// =============================================================================
+print "� Phase 3: Creating Functions...";
+
+// Drop existing functions if they exist
+.drop function parse_generators_data ifexists;
+.drop function low_efficiency_machines ifexists;
+
+// Create parse_generators_data function
+.create function parse_generators_data() {
+    RawData
+    | where endpoint == 'getGenerators'
+    | extend parsed_data = parse_json(data)
+    | mv-expand generator = parsed_data
+    | where generator != ''
+    | extend generator_obj = parse_json(generator)
+    | project 
+        timestamp = todatetime(timestamp),
+        server = tostring(server),
+        generator_id = tostring(generator_obj.ID),
+        generator_name = tostring(generator_obj.Name),
+        generator_class = tostring(generator_obj.ClassName),
+        circuit_group_id = case(
+            isnotnull(generator_obj.PowerInfo), 
+            tolong(generator_obj.PowerInfo.CircuitGroupID), 
+            long(null)
+        ),
+        circuit_id = case(
+            isnotnull(generator_obj.PowerInfo), 
+            tolong(generator_obj.PowerInfo.CircuitID), 
+            long(null)
+        ),
+        power_production_potential = toreal(generator_obj.PowerProductionPotential),
+        current_production = toreal(generator_obj.BaseProd),
+        production_efficiency = case(
+            toreal(generator_obj.PowerProductionPotential) > 0, 
+            toreal(generator_obj.BaseProd) / toreal(generator_obj.PowerProductionPotential), 
+            0.0
+        ),
+        load_percentage = tolong(generator_obj.LoadPercentage),
+        fuel_resource = tostring(generator_obj.FuelResource),
+        fuel_amount = toreal(generator_obj.FuelAmount),
+        fuel_max_amount = case(
+            isnotnull(generator_obj.FuelInventory) and array_length(generator_obj.FuelInventory) > 0, 
+            toreal(generator_obj.FuelInventory[0].MaxAmount), 
+            0.0
+        ),
+        fuel_percentage = case(
+            isnotnull(generator_obj.FuelInventory) and array_length(generator_obj.FuelInventory) > 0 and toreal(generator_obj.FuelInventory[0].MaxAmount) > 0, 
+            toreal(generator_obj.FuelAmount) / toreal(generator_obj.FuelInventory[0].MaxAmount), 
+            0.0
+        ),
+        is_full_speed = tobool(generator_obj.IsFullSpeed),
+        can_start = tobool(generator_obj.CanStart),
+        is_producing = case(toreal(generator_obj.BaseProd) > 0, true, false),
+        somersloops = tolong(generator_obj.Somersloops),
+        power_shards = tolong(generator_obj.PowerShards),
+        location_x = case(
+            isnotnull(generator_obj.location), 
+            toreal(generator_obj.location.x), 
+            real(null)
+        ),
+        location_y = case(
+            isnotnull(generator_obj.location), 
+            toreal(generator_obj.location.y), 
+            real(null)
+        ),
+        location_z = case(
+            isnotnull(generator_obj.location), 
+            toreal(generator_obj.location.z), 
+            real(null)
+        ),
+        fuse_triggered = case(
+            isnotnull(generator_obj.PowerInfo), 
+            tobool(generator_obj.PowerInfo.FuseTriggered), 
+            bool(null)
+        ),
+        power_consumed = case(
+            isnotnull(generator_obj.PowerInfo), 
+            toreal(generator_obj.PowerInfo.PowerConsumed), 
+            real(null)
+        ),
+        max_power_consumed = case(
+            isnotnull(generator_obj.PowerInfo), 
+            toreal(generator_obj.PowerInfo.MaxPowerConsumed), 
+            real(null)
+        ),
+        nuclear_warning = tostring(generator_obj.NuclearWarning),
+        geo_min_power = toreal(generator_obj.GeoMinPower),
+        geo_max_power = toreal(generator_obj.GeoMaxPower),
+        ingestion_time = now()
+    | where isnotempty(generator_id)  // Ensure we have valid generator data
+};
+
+// Create low_efficiency_machines function
+.create function low_efficiency_machines() {
+    factory_machines
+    | where timestamp >= ago(24h)  // Focus on recent data
+    | where is_producing == true   // Only consider active machines
+    | summarize 
+        // Efficiency metrics
+        avg_production_efficiency = avg(production_efficiency),
+        avg_power_efficiency = avg(power_efficiency),
+        min_production_efficiency = min(production_efficiency),
+        max_production_efficiency = max(production_efficiency),
+        efficiency_variance = variance(production_efficiency),
+        
+        // Performance metrics
+        avg_manufacturing_speed = avg(manufacturing_speed),
+        avg_power_consumed = avg(power_consumed),
+        max_power_consumed = max(max_power_consumed),
+        
+        // Status indicators
+        total_records = count(),
+        paused_count = countif(is_paused == true),
+        fuse_triggered_count = countif(fuse_triggered == true),
+        
+        // Location and identification
+        machine_name = any(machine_name),
+        machine_class = any(machine_class),
+        recipe = any(recipe),
+        location_x = any(location_x),
+        location_y = any(location_y),
+        location_z = any(location_z),
+        circuit_group_id = any(circuit_group_id),
+        circuit_id = any(circuit_id),
+        
+        // Timestamps
+        first_seen = min(timestamp),
+        last_seen = max(timestamp)
+    by machine_id
+    | extend 
+        // Calculated efficiency categories
+        efficiency_category = case(
+            avg_production_efficiency >= 0.95, "Excellent",
+            avg_production_efficiency >= 0.80, "Good",
+            avg_production_efficiency >= 0.65, "Fair",
+            avg_production_efficiency >= 0.50, "Poor",
+            "Critical"
+        ),
+        
+        // Power efficiency rating
+        power_efficiency_rating = case(
+            avg_power_efficiency >= 0.90, "Optimal",
+            avg_power_efficiency >= 0.75, "Good",
+            avg_power_efficiency >= 0.60, "Moderate",
+            avg_power_efficiency >= 0.45, "Poor",
+            "Inefficient"
+        ),
+        
+        // Optimization priority (higher = more urgent)
+        optimization_priority = case(
+            avg_production_efficiency < 0.50, 100,
+            avg_production_efficiency < 0.65, 75,
+            avg_production_efficiency < 0.80, 50,
+            avg_production_efficiency < 0.90, 25,
+            0
+        ),
+        
+        // Location string for easy reference
+        location_string = strcat(
+            "X:", tostring(toint(location_x)), 
+            " Y:", tostring(toint(location_y)), 
+            " Z:", tostring(toint(location_z))
+        ),
+        
+        // Issues summary
+        issues_detected = case(
+            fuse_triggered_count > 0, "Power Issues",
+            paused_count > 0, "Paused Operations",
+            efficiency_variance > 0.1, "Unstable Performance",
+            avg_production_efficiency < 0.8, "Low Efficiency",
+            "Operating Normally"
+        ),
+        
+        // Recommendations
+        recommendations = case(
+            avg_production_efficiency < 0.5, "Immediate attention required - Check power supply and configuration",
+            avg_production_efficiency < 0.65, "Consider upgrading or optimizing recipe",
+            avg_production_efficiency < 0.8, "Monitor closely - May need maintenance",
+            avg_production_efficiency < 0.9, "Minor optimization opportunity available",
+            "Operating within acceptable parameters"
+        ),
+        
+        // Data freshness indicator
+        data_freshness = case(
+            last_seen >= ago(1h), "Current",
+            last_seen >= ago(6h), "Recent",
+            last_seen >= ago(24h), "Stale",
+            "Outdated"
+        )
+    | where avg_production_efficiency < 0.95  // Focus on machines that can be improved
+    | order by optimization_priority desc, avg_production_efficiency asc
+};
+
+print "✅ Phase 3 Complete: Functions created";
+
+// =============================================================================
+// PHASE 4: SET DATA RETENTION POLICIES
+// =============================================================================
+print "📅 Phase 4: Setting Data Retention Policies...";
+
+// Set retention policies for fact tables (90 days)
+.alter table power_generators policy retention ```{"SoftDeletePeriod": "90.00:00:00", "Recoverability": "Enabled"}```
+.alter table factory_machines policy retention ```{"SoftDeletePeriod": "90.00:00:00", "Recoverability": "Enabled"}```
+.alter table production_items policy retention ```{"SoftDeletePeriod": "90.00:00:00", "Recoverability": "Enabled"}```
+.alter table power_grid_connections policy retention ```{"SoftDeletePeriod": "90.00:00:00", "Recoverability": "Enabled"}```
+
+// Set retention policy for dimension table (10 years)
+.alter table factory_items policy retention ```{"SoftDeletePeriod": "3650.00:00:00", "Recoverability": "Enabled"}```
+
+print "✅ Phase 4 Complete: Data retention policies set"
+
+// =============================================================================
+// PHASE 5: CREATE UPDATE POLICIES
+// =============================================================================
+print "� Phase 5: Creating Update Policies...";
+
+// Create update policy for power_generators table
+.drop table power_generators policy update ifexists;
+.alter table power_generators policy update @'[
+    {
+        "Source": "RawData",
+        "Query": "parse_generators_data()",
+        "IsEnabled": true,
+        "IsTransactional": false
+    }
+]';
+
+print "✅ Phase 5 Complete: Update policies created";
+
+// =============================================================================
+// PHASE 6: VALIDATION AND TESTING
+// =============================================================================
+print "🔍 Phase 6: Validation and Testing...";
+
+// Check that all tables exist
+.show tables
+| where TableName in ("RawData", "power_generators", "factory_machines", "production_items", "power_grid_connections", "factory_items")
+| summarize tables_created = count()
+| extend validation_status = case(tables_created == 6, "✅ All tables created successfully", "❌ Some tables missing")
+| project validation_status;
+
+// Check that all functions exist
+.show functions
+| where Name in ("parse_generators_data", "low_efficiency_machines") 
+| summarize functions_created = count()
+| extend validation_status = case(functions_created == 2, "✅ All functions created successfully", "❌ Some functions missing")
+| project validation_status;
+
+// Check that update policies exist
+.show table power_generators policy update
+| extend validation_status = case(isnotempty(Policy), "✅ Update policies created successfully", "❌ Update policies missing")
+| project validation_status;
+
+print "✅ Phase 6 Complete: Validation completed";
+
+// =============================================================================
+// PHASE 7: DEPLOYMENT SUMMARY
+// =============================================================================
+print "🎉 Ficsit KQL Database Deployment Complete!";
+print "✅ Tables Created: 6 (1 bronze table + 4 fact tables + 1 dimension table)";
+print "✅ Functions Created: 2 (parse_generators_data, low_efficiency_machines)";
+print "✅ Update Policies: Configured for real-time data ingestion";
+print "✅ Retention Policies: Set for all tables";
+print "";
+print "📋 Next Steps:";
+print "1. Verify data ingestion from FicsitRemote endpoints";
+print "2. Test the parse_generators_data() function with live data";
+print "3. Populate factory_items dimension table with game data";
+print "4. Set up monitoring and alerting for data quality";
+print "5. Create user documentation and training materials";
+print "";
+print "🔗 For more information, see the README.md file in the fabric/kqldatabase folder";
+print "Deployment completed at: " + tostring(now());
+
+// =============================================================================
+// USEFUL COMMANDS FOR MONITORING
+// =============================================================================
+// Check table sizes:
+// .show tables details
+// | project TableName, TotalExtents, TotalOriginalSize, TotalCompressedSize
+
+// Check recent ingestion:
+// .show ingestion failures
+// | where FailureKind != "Permanent"
+// | order by FailedOn desc
+
+// Monitor query performance:
+// .show queries
+// | where StartedOn >= ago(1h)
+// | order by StartedOn desc
+
+// Check database capacity:
+// .show database policy capacity
+// =============================================================================

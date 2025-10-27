@@ -1,0 +1,144 @@
+// =============================================================================
+// PARSE GENERATORS DATA FUNCTION
+// =============================================================================
+// Purpose: Parse and transform generator data from RawData for power_generators table
+// Business Context: Engineering-001 - Power Network Analysis
+// Data Source: RawData table where endpoint = 'getGenerators'
+// Returns: Structured data ready for power_generators table ingestion
+// =============================================================================
+
+// Drop existing function if it exists
+.drop function parse_generators_data ifexists
+
+// Create the parse_generators_data function
+.create function parse_generators_data() {
+    RawData
+    | where endpoint == 'getGenerators'
+    | extend parsed_data = parse_json(data)
+    | mv-expand generator = parsed_data
+    | where generator != ''
+    | extend generator_obj = parse_json(generator)
+    | project 
+        timestamp = todatetime(timestamp),
+        server = tostring(server),
+        generator_id = tostring(generator_obj.ID),
+        generator_name = tostring(generator_obj.Name),
+        generator_class = tostring(generator_obj.ClassName),
+        circuit_group_id = case(
+            isnotnull(generator_obj.PowerInfo), 
+            tolong(generator_obj.PowerInfo.CircuitGroupID), 
+            long(null)
+        ),
+        circuit_id = case(
+            isnotnull(generator_obj.PowerInfo), 
+            tolong(generator_obj.PowerInfo.CircuitID), 
+            long(null)
+        ),
+        power_production_potential = toreal(generator_obj.PowerProductionPotential),
+        current_production = toreal(generator_obj.BaseProd),
+        production_efficiency = case(
+            toreal(generator_obj.PowerProductionPotential) > 0, 
+            toreal(generator_obj.BaseProd) / toreal(generator_obj.PowerProductionPotential), 
+            0.0
+        ),
+        load_percentage = tolong(generator_obj.LoadPercentage),
+        fuel_resource = tostring(generator_obj.FuelResource),
+        fuel_amount = toreal(generator_obj.FuelAmount),
+        fuel_max_amount = case(
+            isnotnull(generator_obj.FuelInventory) and array_length(generator_obj.FuelInventory) > 0, 
+            toreal(generator_obj.FuelInventory[0].MaxAmount), 
+            0.0
+        ),
+        fuel_percentage = case(
+            isnotnull(generator_obj.FuelInventory) and array_length(generator_obj.FuelInventory) > 0 and toreal(generator_obj.FuelInventory[0].MaxAmount) > 0, 
+            toreal(generator_obj.FuelAmount) / toreal(generator_obj.FuelInventory[0].MaxAmount), 
+            0.0
+        ),
+        is_full_speed = tobool(generator_obj.IsFullSpeed),
+        can_start = tobool(generator_obj.CanStart),
+        is_producing = case(toreal(generator_obj.BaseProd) > 0, true, false),
+        somersloops = tolong(generator_obj.Somersloops),
+        power_shards = tolong(generator_obj.PowerShards),
+        location_x = case(
+            isnotnull(generator_obj.location), 
+            toreal(generator_obj.location.x), 
+            real(null)
+        ),
+        location_y = case(
+            isnotnull(generator_obj.location), 
+            toreal(generator_obj.location.y), 
+            real(null)
+        ),
+        location_z = case(
+            isnotnull(generator_obj.location), 
+            toreal(generator_obj.location.z), 
+            real(null)
+        ),
+        fuse_triggered = case(
+            isnotnull(generator_obj.PowerInfo), 
+            tobool(generator_obj.PowerInfo.FuseTriggered), 
+            bool(null)
+        ),
+        power_consumed = case(
+            isnotnull(generator_obj.PowerInfo), 
+            toreal(generator_obj.PowerInfo.PowerConsumed), 
+            real(null)
+        ),
+        max_power_consumed = case(
+            isnotnull(generator_obj.PowerInfo), 
+            toreal(generator_obj.PowerInfo.MaxPowerConsumed), 
+            real(null)
+        ),
+        nuclear_warning = tostring(generator_obj.NuclearWarning),
+        geo_min_power = toreal(generator_obj.GeoMinPower),
+        geo_max_power = toreal(generator_obj.GeoMaxPower),
+        ingestion_time = now()
+    | where isnotempty(generator_id)  // Ensure we have valid generator data
+};
+
+// Set function description for business users
+.alter function parse_generators_data docstring "Parses and transforms generator data from RawData endpoint 'getGenerators' into structured format for power_generators table. Handles JSON parsing, data type conversion, and derived field calculations."
+
+// =============================================================================
+// FUNCTION FEATURES
+// =============================================================================
+// 1. **JSON Parsing**: Safely parses nested JSON structures
+// 2. **Data Type Conversion**: Converts to appropriate KQL data types
+// 3. **Derived Fields**: Calculates efficiency percentages and status flags
+// 4. **Error Handling**: Handles missing or null values gracefully
+// 5. **Data Validation**: Filters out invalid or incomplete records
+// 6. **Timestamp Management**: Adds ingestion timestamp for audit trail
+// =============================================================================
+
+// =============================================================================
+// SAMPLE USAGE
+// =============================================================================
+// Test the function with recent data:
+// parse_generators_data()
+// | where timestamp >= ago(1h)
+// | take 5
+// | project generator_name, generator_class, current_production, production_efficiency
+
+// Check function output schema:
+// parse_generators_data()
+// | take 1
+// | getschema
+
+// Validate data quality:
+// parse_generators_data()
+// | where timestamp >= ago(1h)
+// | summarize 
+//     total_records = count(),
+//     valid_generators = countif(isnotempty(generator_id)),
+//     avg_efficiency = avg(production_efficiency),
+//     unique_generators = dcount(generator_id)
+
+// =============================================================================
+// MAINTENANCE CONSIDERATIONS
+// =============================================================================
+// 1. **Schema Changes**: Update function if generator data structure changes
+// 2. **Performance**: Monitor function execution time for large datasets
+// 3. **Data Quality**: Add validation rules as needed
+// 4. **Error Handling**: Enhance error handling based on production issues
+// 5. **Testing**: Regularly test with sample data to ensure accuracy
+// =============================================================================

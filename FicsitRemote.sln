@@ -1,0 +1,57 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.2.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SatisfactoryDataStreamer", "azure-integration\SatisfactoryDataStreamer.csproj", "{F72A0AEE-A4CA-5D8D-779E-75859CD0897F}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "azure-integration", "azure-integration", "{8D8745F4-2E4A-F031-4555-917DDF19AC3B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "obj", "obj", "{4E6B3A28-B826-1796-0641-08625FA2EE0F}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Debug", "Debug", "{565F1411-0F57-F405-5B82-768B15941D37}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "net8.0", "net8.0", "{C30AD88C-3394-B7A1-40D8-7023286B1D4A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WorkerExtensions", "azure-integration\obj\Debug\net8.0\WorkerExtensions\WorkerExtensions.csproj", "{307FB6CB-21FA-15B5-6A78-B0173D585951}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "release", "release", "{8AAD5CE4-3353-5D96-B9D7-D175F3CD1B3F}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "net8.0", "net8.0", "{97C7F45B-91C0-871C-5654-E4B267EE203D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WorkerExtensions", "azure-integration\obj\release\net8.0\WorkerExtensions\WorkerExtensions.csproj", "{FCF9A7DE-B19D-1D0F-471E-E576826A3359}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F72A0AEE-A4CA-5D8D-779E-75859CD0897F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F72A0AEE-A4CA-5D8D-779E-75859CD0897F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F72A0AEE-A4CA-5D8D-779E-75859CD0897F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F72A0AEE-A4CA-5D8D-779E-75859CD0897F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{307FB6CB-21FA-15B5-6A78-B0173D585951}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{307FB6CB-21FA-15B5-6A78-B0173D585951}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{307FB6CB-21FA-15B5-6A78-B0173D585951}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{307FB6CB-21FA-15B5-6A78-B0173D585951}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FCF9A7DE-B19D-1D0F-471E-E576826A3359}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FCF9A7DE-B19D-1D0F-471E-E576826A3359}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FCF9A7DE-B19D-1D0F-471E-E576826A3359}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FCF9A7DE-B19D-1D0F-471E-E576826A3359}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{4E6B3A28-B826-1796-0641-08625FA2EE0F} = {8D8745F4-2E4A-F031-4555-917DDF19AC3B}
+		{565F1411-0F57-F405-5B82-768B15941D37} = {4E6B3A28-B826-1796-0641-08625FA2EE0F}
+		{C30AD88C-3394-B7A1-40D8-7023286B1D4A} = {565F1411-0F57-F405-5B82-768B15941D37}
+		{307FB6CB-21FA-15B5-6A78-B0173D585951} = {C30AD88C-3394-B7A1-40D8-7023286B1D4A}
+		{8AAD5CE4-3353-5D96-B9D7-D175F3CD1B3F} = {4E6B3A28-B826-1796-0641-08625FA2EE0F}
+		{97C7F45B-91C0-871C-5654-E4B267EE203D} = {8AAD5CE4-3353-5D96-B9D7-D175F3CD1B3F}
+		{FCF9A7DE-B19D-1D0F-471E-E576826A3359} = {97C7F45B-91C0-871C-5654-E4B267EE203D}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {C22D2D06-8D0C-4078-BE63-DA4000491B0A}
+	EndGlobalSection
+EndGlobal

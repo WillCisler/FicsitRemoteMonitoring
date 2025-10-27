@@ -1,0 +1,114 @@
+// =============================================================================
+// FACTORY MACHINES TABLE
+// =============================================================================
+// Purpose: Track production machine efficiency and operational status
+// Business Context: Engineering-003 - Production Optimisation
+// Data Source: RawData table where endpoint = 'getExtractors'
+// Update Frequency: Real-time via update policy
+// =============================================================================
+
+// Drop existing table if it exists (for clean deployment)
+.drop table factory_machines ifexists
+
+// Create the factory_machines fact table
+.create table factory_machines (
+    timestamp: datetime,                    // When the data was collected
+    server: string,                         // Server identifier for multi-server deployments
+    machine_id: string,                     // Unique identifier for the machine
+    machine_name: string,                   // Display name of the machine
+    machine_class: string,                  // Type/class of machine (e.g., Miner, Constructor, etc.)
+    recipe: string,                         // Recipe being processed by the machine
+    recipe_class: string,                   // Class name of the recipe
+    production_efficiency: real,            // Overall production efficiency (0.0 to 1.0)
+    manufacturing_speed: long,              // Manufacturing speed percentage
+    is_producing: bool,                     // Whether machine is currently producing
+    is_configured: bool,                    // Whether machine is properly configured
+    is_paused: bool,                        // Whether machine is paused
+    power_consumed: real,                   // Current power consumption
+    max_power_consumed: real,               // Maximum power consumption
+    power_efficiency: real,                 // Power usage efficiency
+    circuit_group_id: long,                 // Power circuit group this machine belongs to
+    circuit_id: long,                       // Specific circuit within the group
+    fuse_triggered: bool,                   // Whether the circuit fuse has been triggered
+    somersloops: long,                      // Number of somersloops installed
+    power_shards: long,                     // Number of power shards installed
+    location_x: real,                       // X coordinate for location mapping
+    location_y: real,                       // Y coordinate for location mapping
+    location_z: real,                       // Z coordinate for location mapping
+    primary_color: string,                  // Primary color for visual identification
+    secondary_color: string,                // Secondary color for visual identification
+    machine_type: string,                   // Derived type (extractor, manufacturer, etc.)
+    operational_status: string,             // Derived operational status
+    efficiency_category: string,            // Efficiency category (high, medium, low)
+    ingestion_time: datetime                // When this record was ingested into the table
+)
+
+// Set table description for business users
+.alter table factory_machines docstring "Production machine efficiency and operational status tracking. Enables identification of underperforming machines and optimization opportunities across the factory floor."
+
+
+
+// Set data retention policy (90 days for detailed analysis)
+.alter table factory_machines policy retention ```
+{
+    "SoftDeletePeriod": "90.00:00:00",
+    "Recoverability": "Enabled"
+}
+```
+
+// =============================================================================
+// SAMPLE QUERIES FOR TESTING
+// =============================================================================
+
+// Test Query 1: Find lowest efficiency machines
+// factory_machines
+// | where timestamp >= ago(24h)
+// | where production_efficiency < 0.8
+// | summarize 
+//     avg_efficiency = avg(production_efficiency),
+//     avg_power_consumed = avg(power_consumed),
+//     location = any(strcat(location_x, ",", location_y, ",", location_z))
+//   by machine_id, machine_name, machine_class
+// | order by avg_efficiency asc
+// | take 20
+
+// Test Query 2: Machine status summary by class
+// factory_machines
+// | where timestamp >= ago(1h)
+// | summarize 
+//     total_machines = dcount(machine_id),
+//     producing_machines = countif(is_producing),
+//     paused_machines = countif(is_paused),
+//     avg_efficiency = avg(production_efficiency),
+//     total_power_consumed = sum(power_consumed)
+//   by machine_class
+// | extend production_rate = producing_machines * 100.0 / total_machines
+// | order by total_power_consumed desc
+
+// Test Query 3: Production efficiency trends over time
+// factory_machines
+// | where timestamp >= ago(24h)
+// | where is_producing == true
+// | summarize 
+//     avg_efficiency = avg(production_efficiency),
+//     machine_count = dcount(machine_id)
+//   by bin(timestamp, 1h), machine_class
+// | order by timestamp desc
+
+// Test Query 4: Identify machines requiring maintenance
+// factory_machines
+// | where timestamp >= ago(1h)
+// | where is_configured == false or fuse_triggered == true
+// | project machine_name, machine_class, location_x, location_y, location_z, 
+//           is_configured, fuse_triggered, operational_status
+// | order by machine_name
+
+// =============================================================================
+// PERFORMANCE CONSIDERATIONS
+// =============================================================================
+// 1. Partition by timestamp for time-based queries
+// 2. Use machine_id for point lookups
+// 3. Index on efficiency for optimization queries
+// 4. Consider materialized views for dashboard queries
+// 5. Monitor ingestion performance for high-frequency updates
+// =============================================================================

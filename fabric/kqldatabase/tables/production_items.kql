@@ -1,0 +1,125 @@
+// =============================================================================
+// PRODUCTION ITEMS TABLE
+// =============================================================================
+// Purpose: Track individual item production rates and resource extraction
+// Business Context: Engineering-003 - Production Optimisation
+// Data Source: RawData table where endpoint = 'getExtractors' (production array)
+// Update Frequency: Real-time via update policy
+// =============================================================================
+
+// Drop existing table if it exists (for clean deployment)
+.drop table production_items ifexists
+
+// Create the production_items fact table
+.create table production_items (
+    timestamp: datetime,                    // When the data was collected
+    server: string,                         // Server identifier for multi-server deployments
+    machine_id: string,                     // Machine producing this item
+    item_name: string,                      // Display name of the item being produced
+    item_class: string,                     // Class name of the item
+    current_production: real,               // Current production rate (items/minute)
+    max_production: long,                   // Maximum production rate possible
+    production_percentage: real,            // Production efficiency percentage (0.0 to 1.0)
+    current_amount: real,                   // Current amount in machine inventory
+    max_amount: long,                       // Maximum inventory capacity
+    inventory_percentage: real,             // Inventory fill percentage
+    resource_type: string,                  // "extracted" for base resources, "manufactured" for processed items
+    is_base_resource: bool,                 // True for items extracted from world nodes
+    is_bottleneck: bool,                    // Whether this item is causing production bottlenecks
+    production_rate_per_minute: real,       // Standardized production rate
+    theoretical_max_rate: real,             // Theoretical maximum under perfect conditions
+    efficiency_rating: string,              // Efficiency category (excellent, good, fair, poor)
+    output_backed_up: bool,                 // Whether output is backed up due to full inventory
+    input_starved: bool,                    // Whether production is limited by input availability
+    recipe_efficiency: real,                // Recipe-specific efficiency multiplier
+    quality_modifier: real,                 // Quality/purity modifier for extracted resources
+    ingestion_time: datetime                // When this record was ingested into the table
+)
+
+// Set table description for business users
+.alter table production_items docstring "Individual item production rates and resource extraction tracking. Enables analysis of production bottlenecks, resource flow efficiency, and supply chain optimization opportunities."
+
+// Create indexes for better query performance
+
+
+// Set data retention policy (90 days for detailed analysis)
+.alter table production_items policy retention ```
+{
+    "SoftDeletePeriod": "90.00:00:00",
+    "Recoverability": "Enabled"
+}
+```
+
+// =============================================================================
+// SAMPLE QUERIES FOR TESTING
+// =============================================================================
+
+// Test Query 1: Top produced items by volume
+// production_items
+// | where timestamp >= ago(24h)
+// | summarize 
+//     total_production = sum(current_production),
+//     avg_efficiency = avg(production_percentage),
+//     unique_machines = dcount(machine_id)
+//   by item_name, resource_type
+// | order by total_production desc
+// | take 20
+
+// Test Query 2: Identify production bottlenecks
+// production_items
+// | where timestamp >= ago(1h)
+// | where is_bottleneck == true or output_backed_up == true
+// | summarize 
+//     bottleneck_count = countif(is_bottleneck),
+//     backed_up_count = countif(output_backed_up),
+//     avg_inventory_fill = avg(inventory_percentage)
+//   by item_name, machine_id
+// | order by bottleneck_count desc, backed_up_count desc
+
+// Test Query 3: Base resource extraction efficiency
+// production_items
+// | where timestamp >= ago(24h)
+// | where is_base_resource == true
+// | summarize 
+//     avg_extraction_rate = avg(current_production),
+//     avg_efficiency = avg(production_percentage),
+//     extraction_volume = sum(current_production)
+//   by item_name
+// | extend efficiency_category = case(
+//     avg_efficiency >= 0.9, "Excellent",
+//     avg_efficiency >= 0.7, "Good", 
+//     avg_efficiency >= 0.5, "Fair",
+//     "Poor"
+//   )
+// | order by extraction_volume desc
+
+// Test Query 4: Production trends over time
+// production_items
+// | where timestamp >= ago(24h)
+// | summarize 
+//     avg_production = avg(current_production),
+//     total_items = sum(current_production),
+//     avg_efficiency = avg(production_percentage)
+//   by bin(timestamp, 1h), item_name
+// | order by timestamp desc, total_items desc
+
+// Test Query 5: Resource flow analysis
+// production_items
+// | where timestamp >= ago(1h)
+// | summarize 
+//     base_resources = sumif(current_production, is_base_resource == true),
+//     manufactured_items = sumif(current_production, is_base_resource == false),
+//     total_machines = dcount(machine_id)
+//   by server
+// | extend resource_to_manufactured_ratio = base_resources / manufactured_items
+// | project server, base_resources, manufactured_items, resource_to_manufactured_ratio, total_machines
+
+// =============================================================================
+// PERFORMANCE CONSIDERATIONS
+// =============================================================================
+// 1. High-frequency updates require efficient indexing
+// 2. Partition by timestamp and server for optimal query performance
+// 3. Use materialized views for real-time dashboards
+// 4. Monitor for hot partitions on popular items
+// 5. Consider aggregation policies for historical trend analysis
+// =============================================================================

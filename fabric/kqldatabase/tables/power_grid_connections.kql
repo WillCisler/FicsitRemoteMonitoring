@@ -1,0 +1,158 @@
+// =============================================================================
+// POWER GRID CONNECTIONS TABLE
+// =============================================================================
+// Purpose: Track power grid topology and circuit connections
+// Business Context: Engineering-002 - Power Grid Clean up
+// Data Source: PowerCircuits table and power_generators table
+// Update Frequency: Real-time via update policy
+// =============================================================================
+
+// Drop existing table if it exists (for clean deployment)
+.drop table power_grid_connections ifexists
+
+// Create the power_grid_connections fact table
+.create table power_grid_connections (
+    timestamp: datetime,                    // When the data was collected
+    server: string,                         // Server identifier for multi-server deployments
+    circuit_group_id: long,                 // Primary circuit group identifier
+    circuit_id: long,                       // Specific circuit within the group
+    associated_circuits: dynamic,           // Array of connected circuit IDs
+    connected_generators: dynamic,          // Array of generator IDs connected to this circuit
+    connected_machines: dynamic,            // Array of machine IDs connected to this circuit
+    total_capacity: real,                   // Total power generation capacity
+    total_consumption: real,                // Total power consumption
+    power_surplus: real,                    // Available power capacity (capacity - consumption)
+    power_efficiency: real,                 // Overall efficiency of the circuit
+    battery_capacity: real,                 // Total battery capacity on this circuit
+    battery_percentage: real,               // Battery charge level percentage
+    battery_input: real,                    // Power flowing into batteries
+    battery_output: real,                   // Power flowing out of batteries
+    battery_differential: real,             // Net battery power flow
+    battery_time_empty: timespan,           // Time until batteries are empty
+    battery_time_full: timespan,            // Time until batteries are full
+    fuse_triggered: bool,                   // Whether any fuse in the circuit is triggered
+    connection_health: string,              // Overall health: "Excellent", "Good", "Fair", "Poor", "Critical"
+    connection_stability: real,             // Stability rating (0.0 to 1.0)
+    load_balancing_score: real,             // How well load is balanced across generators
+    redundancy_level: string,               // Redundancy level: "High", "Medium", "Low", "None"
+    critical_path_risk: real,               // Risk of circuit failure (0.0 to 1.0)
+    optimization_opportunities: dynamic,    // Array of potential optimization actions
+    alert_level: string,                    // Alert level: "None", "Info", "Warning", "Critical"
+    alert_messages: dynamic,                // Array of alert messages
+    network_segment: string,                // Network segment identifier for large grids
+    is_primary_circuit: bool,               // Whether this is a primary power distribution circuit
+    is_backup_circuit: bool,                // Whether this is a backup/redundant circuit
+    ingestion_time: datetime                // When this record was ingested into the table
+)
+
+// Set table description for business users
+.alter table power_grid_connections docstring "Power grid topology and circuit connection tracking. Enables visualization of power network structure, identification of connection bottlenecks, and optimization of grid layout for improved reliability and efficiency."
+
+
+
+// Set data retention policy (90 days for detailed analysis)
+.alter table power_grid_connections policy retention ```
+{
+    "SoftDeletePeriod": "90.00:00:00",
+    "Recoverability": "Enabled"
+}
+```
+
+// =============================================================================
+// SAMPLE QUERIES FOR TESTING
+// =============================================================================
+
+// Test Query 1: Grid health overview
+// power_grid_connections
+// | where timestamp >= ago(1h)
+// | summarize 
+//     total_circuits = dcount(circuit_group_id),
+//     healthy_circuits = countif(connection_health in ("Excellent", "Good")),
+//     critical_circuits = countif(connection_health == "Critical"),
+//     fuse_triggered_count = countif(fuse_triggered == true),
+//     total_capacity = sum(total_capacity),
+//     total_consumption = sum(total_consumption)
+//   by server
+// | extend 
+//     health_percentage = healthy_circuits * 100.0 / total_circuits,
+//     utilization_percentage = total_consumption * 100.0 / total_capacity
+// | project server, total_circuits, health_percentage, utilization_percentage, critical_circuits, fuse_triggered_count
+
+// Test Query 2: Identify optimization opportunities
+// power_grid_connections
+// | where timestamp >= ago(1h)
+// | where array_length(optimization_opportunities) > 0
+// | project circuit_group_id, circuit_id, connection_health, optimization_opportunities, alert_level
+// | order by alert_level desc, connection_health asc
+
+// Test Query 3: Battery system performance
+// power_grid_connections
+// | where timestamp >= ago(24h)
+// | where battery_capacity > 0
+// | summarize 
+//     avg_battery_percentage = avg(battery_percentage),
+//     avg_battery_differential = avg(battery_differential),
+//     circuits_with_batteries = dcount(circuit_group_id)
+//   by bin(timestamp, 1h)
+// | order by timestamp desc
+
+// Test Query 4: Circuit load balancing analysis
+// power_grid_connections
+// | where timestamp >= ago(1h)
+// | where load_balancing_score < 0.7  // Poor load balancing
+// | project circuit_group_id, circuit_id, load_balancing_score, total_capacity, total_consumption
+// | extend load_percentage = total_consumption * 100.0 / total_capacity
+// | order by load_balancing_score asc
+
+// Test Query 5: Network topology analysis
+// power_grid_connections
+// | where timestamp >= ago(1h)
+// | project circuit_group_id, circuit_id, associated_circuits, connected_generators, connected_machines
+// | extend 
+//     connection_count = array_length(associated_circuits),
+//     generator_count = array_length(connected_generators),
+//     machine_count = array_length(connected_machines)
+// | summarize 
+//     avg_connections = avg(connection_count),
+//     total_generators = sum(generator_count),
+//     total_machines = sum(machine_count)
+//   by circuit_group_id
+// | order by circuit_group_id
+
+// Test Query 6: Critical path risk assessment
+// power_grid_connections
+// | where timestamp >= ago(1h)
+// | where critical_path_risk > 0.7  // High risk
+// | project circuit_group_id, circuit_id, critical_path_risk, redundancy_level, connection_health
+// | order by critical_path_risk desc
+
+// =============================================================================
+// BUSINESS LOGIC FOR DERIVED FIELDS
+// =============================================================================
+// Connection Health Calculation:
+// - Excellent: efficiency > 0.95, no fuses triggered, good load balancing
+// - Good: efficiency > 0.8, minimal issues
+// - Fair: efficiency > 0.6, some optimization needed
+// - Poor: efficiency > 0.4, significant issues
+// - Critical: efficiency <= 0.4, major problems or fuses triggered
+
+// Load Balancing Score:
+// - Based on variance in generator loads within the circuit
+// - Higher scores indicate better load distribution
+// - Calculated from connected_generators performance data
+
+// Critical Path Risk:
+// - Assesses single points of failure in the network
+// - Higher values indicate greater risk of cascading failures
+// - Considers redundancy levels and connection patterns
+// =============================================================================
+
+// =============================================================================
+// PERFORMANCE CONSIDERATIONS
+// =============================================================================
+// 1. Complex joins with generators and machines tables
+// 2. Dynamic arrays require careful indexing strategy
+// 3. Use materialized views for real-time dashboard queries
+// 4. Consider pre-computing topology metrics for performance
+// 5. Monitor query complexity for network analysis operations
+// =============================================================================

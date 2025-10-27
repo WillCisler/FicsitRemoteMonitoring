@@ -1,0 +1,120 @@
+// =============================================================================
+// FACTORY ITEMS DIMENSION TABLE
+// =============================================================================
+// Purpose: Master reference table for all items in the factory system
+// Business Context: Engineering-003 - Production Optimisation (Reference Data)
+// Data Source: Derived from production_items and external game data
+// Update Frequency: On-demand updates when new items are discovered
+// =============================================================================
+
+// Drop existing table if it exists (for clean deployment)
+.drop table factory_items ifexists
+
+// Create the factory_items dimension table
+.create table factory_items (
+    item_name: string,                      // Display name of the item
+    item_class: string,                     // Class name of the item
+    item_category: string,                  // Category: "raw_material", "intermediate", "final_product", "tool", "equipment"
+    item_subcategory: string,               // Subcategory for finer classification
+    is_extractable: bool,                   // True for items that can be extracted from world nodes
+    is_manufacturable: bool,                // True for items that can be manufactured
+    is_fuel: bool,                          // True for items that can be used as fuel
+    is_consumable: bool,                    // True for items that are consumed in production
+    base_production_rate: real,             // Standard production rate per minute
+    stack_size: long,                       // Maximum stack size for this item
+    resource_node_type: string,             // Type of resource node (for extractable items)
+    resource_purity: string,                // Resource purity level (normal, impure, pure)
+    energy_value: real,                     // Energy value if used as fuel (MJ)
+    sink_points: long,                      // Points awarded when sent to resource sink
+    unlock_tier: long,                      // Tier when this item becomes available
+    requires_research: bool,                // Whether item requires research to unlock
+    item_description: string,               // Business-friendly description
+    production_chain_level: long,           // Level in production chain (0=raw, 1=tier1, etc.)
+    complexity_score: real,                 // Complexity rating for production planning
+    market_value: real,                     // Relative market/resource value
+    storage_requirements: string,           // Special storage requirements
+    transportation_method: string,          // Preferred transportation method
+    quality_variants: dynamic,              // Array of quality variants if applicable
+    recipe_inputs: dynamic,                 // Array of input items for manufacturing
+    recipe_outputs: dynamic,                // Array of output items from manufacturing
+    alternative_recipes: dynamic,           // Array of alternative recipe names
+    production_buildings: dynamic,          // Array of buildings that can produce this item
+    last_updated: datetime,                 // When this record was last updated
+    data_source: string,                    // Source of the data (game_data, user_input, derived)
+    is_active: bool                         // Whether this item is currently active in the game
+)
+
+// Set table description for business users
+.alter table factory_items docstring "Master reference table for all factory items and resources. Provides comprehensive metadata for production planning, resource classification, and supply chain optimization."
+
+
+// Set data retention policy (indefinite for reference data)
+.alter table factory_items policy retention ```
+{
+    "SoftDeletePeriod": "3650.00:00:00",
+    "Recoverability": "Enabled"
+}
+```
+
+// =============================================================================
+// INITIAL SEED DATA FOR COMMON SATISFACTORY ITEMS
+// =============================================================================
+
+// Insert common raw materials
+.ingest inline into table factory_items <|
+item_name,item_class,item_category,item_subcategory,is_extractable,is_manufacturable,is_fuel,is_consumable,base_production_rate,stack_size,resource_node_type,resource_purity,energy_value,sink_points,unlock_tier,requires_research,item_description,production_chain_level,complexity_score,market_value,storage_requirements,transportation_method,quality_variants,recipe_inputs,recipe_outputs,alternative_recipes,production_buildings,last_updated,data_source,is_active
+"Iron Ore","Desc_OreIron_C","raw_material","ore",true,false,false,true,30.0,100,"Iron","normal",0.0,1,0,false,"Basic iron ore extracted from iron nodes",0,1.0,1.0,"standard","belt",[],"[]","[]","[]","[""Build_MinerMk1_C"",""Build_MinerMk2_C"",""Build_MinerMk3_C""]",now(),"game_data",true
+"Copper Ore","Desc_OreCopper_C","raw_material","ore",true,false,false,true,30.0,100,"Copper","normal",0.0,2,0,false,"Basic copper ore extracted from copper nodes",0,1.0,1.2,"standard","belt",[],"[]","[]","[]","[""Build_MinerMk1_C"",""Build_MinerMk2_C"",""Build_MinerMk3_C""]",now(),"game_data",true
+"Limestone","Desc_Stone_C","raw_material","ore",true,false,false,true,30.0,100,"Limestone","normal",0.0,2,0,false,"Basic limestone extracted from limestone nodes",0,1.0,0.8,"standard","belt",[],"[]","[]","[]","[""Build_MinerMk1_C"",""Build_MinerMk2_C"",""Build_MinerMk3_C""]",now(),"game_data",true
+"Coal","Desc_Coal_C","raw_material","ore",true,false,true,true,30.0,100,"Coal","normal",270.0,3,3,false,"Coal ore used for fuel and steel production",0,1.0,1.5,"standard","belt",[],"[]","[]","[]","[""Build_MinerMk1_C"",""Build_MinerMk2_C"",""Build_MinerMk3_C""]",now(),"game_data",true
+"Crude Oil","Desc_LiquidOil_C","raw_material","liquid",true,false,true,true,120.0,1,"Oil","normal",320.0,5,5,false,"Crude oil extracted from oil nodes",0,1.0,2.0,"pipeline","pipeline",[],"[]","[]","[]","[""Build_OilPump_C""]",now(),"game_data",true
+"Water","Desc_Water_C","raw_material","liquid",true,false,false,true,120.0,1,"Water","infinite",0.0,5,3,false,"Water extracted from water bodies",0,1.0,0.5,"pipeline","pipeline",[],"[]","[]","[]","[""Build_WaterPump_C""]",now(),"game_data",true
+
+// Insert common intermediate products
+.ingest inline into table factory_items <|
+item_name,item_class,item_category,item_subcategory,is_extractable,is_manufacturable,is_fuel,is_consumable,base_production_rate,stack_size,resource_node_type,resource_purity,energy_value,sink_points,unlock_tier,requires_research,item_description,production_chain_level,complexity_score,market_value,storage_requirements,transportation_method,quality_variants,recipe_inputs,recipe_outputs,alternative_recipes,production_buildings,last_updated,data_source,is_active
+"Iron Ingot","Desc_IronIngot_C","intermediate","ingot",false,true,false,true,30.0,100,"","",0.0,2,0,false,"Refined iron ingot used in construction",1,1.2,1.5,"standard","belt",[],"[""Iron Ore""]","[]","[""Iron Ingot Alternate""]","[""Build_SmelterMk1_C""]",now(),"game_data",true
+"Copper Ingot","Desc_CopperIngot_C","intermediate","ingot",false,true,false,true,30.0,100,"","",0.0,6,0,false,"Refined copper ingot used in electronics",1,1.2,1.8,"standard","belt",[],"[""Copper Ore""]","[]","[""Copper Ingot Alternate""]","[""Build_SmelterMk1_C""]",now(),"game_data",true
+"Steel Ingot","Desc_SteelIngot_C","intermediate","ingot",false,true,false,true,45.0,100,"","",0.0,8,3,false,"High-strength steel ingot for advanced construction",1,1.5,2.5,"standard","belt",[],"[""Iron Ore"",""Coal""]","[]","[""Steel Ingot Alternate""]","[""Build_FoundryMk1_C""]",now(),"game_data",true
+"Concrete","Desc_Concrete_C","intermediate","building_material",false,true,false,true,15.0,100,"","",0.0,4,0,false,"Basic construction material made from limestone",1,1.1,1.2,"standard","belt",[],"[""Limestone""]","[]","[""Concrete Alternate""]","[""Build_ConstructorMk1_C""]",now(),"game_data",true
+"Wire","Desc_Wire_C","intermediate","component",false,true,false,true,30.0,500,"","",0.0,6,0,false,"Copper wire used in electronics and power systems",1,1.1,1.5,"standard","belt",[],"[""Copper Ingot""]","[]","[""Wire Alternate""]","[""Build_ConstructorMk1_C""]",now(),"game_data",true
+
+// =============================================================================
+// SAMPLE QUERIES FOR TESTING
+// =============================================================================
+
+// Test Query 1: Get all raw materials
+// factory_items
+// | where item_category == "raw_material"
+// | project item_name, is_extractable, resource_node_type, base_production_rate
+// | order by item_name
+
+// Test Query 2: Find items by production chain level
+// factory_items
+// | summarize 
+//     item_count = count(),
+//     avg_complexity = avg(complexity_score)
+//   by production_chain_level
+// | order by production_chain_level
+
+// Test Query 3: Get manufacturing dependencies
+// factory_items
+// | where is_manufacturable == true
+// | project item_name, recipe_inputs, production_buildings
+// | order by item_name
+
+// Test Query 4: Find fuel items
+// factory_items
+// | where is_fuel == true
+// | project item_name, energy_value, sink_points
+// | order by energy_value desc
+
+// =============================================================================
+// PERFORMANCE CONSIDERATIONS
+// =============================================================================
+// 1. This is a relatively small dimension table (< 1000 rows expected)
+// 2. Optimize for lookup operations by item_name and item_class
+// 3. Consider caching for frequently accessed reference data
+// 4. Update patterns should be infrequent (new game updates)
+// 5. Use appropriate indexes for join operations with fact tables
+// =============================================================================
