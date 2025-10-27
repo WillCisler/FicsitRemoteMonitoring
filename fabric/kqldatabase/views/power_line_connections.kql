@@ -1,0 +1,163 @@
+// =============================================================================
+// POWER LINE CONNECTIONS VIEW
+// =============================================================================
+// Purpose: Detailed view of power connections for network maintenance and upgrades
+// Business Context: Engineering-002 - Power Grid Clean up
+// Data Source: power_grid_connections + power_generators tables
+// Update Frequency: Real-time (view is computed on query)
+// =============================================================================
+
+// Drop existing function if it exists
+.drop function power_line_connections ifexists
+
+// Create the power_line_connections function (acts as a view)
+.create function power_line_connections() {
+    power_grid_connections pgc
+    | where timestamp >= ago(2h)  // Very recent connection state
+    | join kind=leftouter (
+        power_generators
+        | where timestamp >= ago(2h)
+        | summarize 
+            generators_in_circuit = count(),
+            total_generation_capacity = sum(power_production_potential),
+            active_generators = countif(is_producing == true),
+            generator_efficiency = avg(production_efficiency)
+        by circuit_group_id, circuit_id
+    ) on circuit_group_id, circuit_id
+    | extend 
+        // Connection analysis
+        associated_circuit_count = array_length(associated_circuits),
+        power_balance = total_capacity - total_consumption,
+        power_utilization = case(
+            total_capacity > 0, 
+            (total_consumption / total_capacity) * 100, 
+            0.0
+        ),
+        
+        // Connection health indicators
+        connection_stability = case(
+            fuse_triggered == true, "Unstable - Fuse Tripped",
+            power_balance < -50, "Overloaded",
+            power_balance < 0, "Strained", 
+            power_balance > total_capacity * 0.5, "Underutilized",
+            "Balanced"
+        ),
+        
+        // Priority switch candidates
+        priority_switch_candidate = case(
+            associated_circuit_count > 3, "High Priority",
+            associated_circuit_count > 1 and power_utilization > 80, "Medium Priority",
+            associated_circuit_count > 1, "Low Priority",
+            "Not Applicable"
+        ),
+        
+        // Circuit identifier
+        circuit_name = strcat("CG", tostring(circuit_group_id), "-C", tostring(circuit_id)),
+        
+        // Maintenance recommendations
+        maintenance_action = case(
+            fuse_triggered == true, "Replace/Reset Fuse",
+            power_balance < -100, "Add Generation Capacity",
+            power_utilization > 95, "Split Circuit", 
+            associated_circuit_count > 5, "Install Priority Switches",
+            power_balance > total_capacity * 0.8, "Consider Load Balancing",
+            "Monitor"
+        ),
+        
+        // Risk assessment
+        failure_risk = case(
+            fuse_triggered == true, "Critical",
+            power_utilization > 95, "High",
+            power_utilization > 85, "Medium", 
+            battery_percentage < 20, "Medium",
+            "Low"
+        )
+    | project 
+        circuit_name,
+        circuit_group_id,
+        circuit_id,
+        associated_circuit_count,
+        connected_generators = connected_generators,
+        connected_machines = connected_machines,
+        generators_in_circuit,
+        active_generators,
+        total_capacity,
+        total_consumption,
+        power_balance,
+        power_utilization,
+        battery_percentage,
+        battery_differential,
+        connection_stability,
+        priority_switch_candidate,
+        maintenance_action,
+        failure_risk,
+        generator_efficiency,
+        fuse_triggered,
+        connection_health,
+        timestamp,
+        server
+    | order by 
+        case(failure_risk, "Critical", 4, "High", 3, "Medium", 2, "Low", 1, 0) desc,
+        power_utilization desc
+}
+
+// Set function description for business users  
+.alter function power_line_connections docstring "Detailed analysis of individual power line connections for maintenance planning, priority switch installation, and grid optimization. Identifies connection bottlenecks and failure risks."
+
+// =============================================================================
+// SAMPLE USAGE QUERIES
+// =============================================================================
+
+// Usage Example 1: Priority switch installation candidates
+// power_line_connections()
+// | where priority_switch_candidate in ("High Priority", "Medium Priority")
+// | project circuit_name, associated_circuit_count, power_utilization, priority_switch_candidate, maintenance_action
+// | order by case(priority_switch_candidate, "High Priority", 3, "Medium Priority", 2, 1) desc
+
+// Usage Example 2: Critical connections requiring immediate attention
+// power_line_connections()
+// | where failure_risk in ("Critical", "High")
+// | project circuit_name, failure_risk, connection_stability, maintenance_action, power_utilization, fuse_triggered
+// | order by case(failure_risk, "Critical", 2, "High", 1, 0) desc
+
+// Usage Example 3: Circuit load balancing opportunities
+// power_line_connections()
+// | where power_utilization > 80 or power_balance < 0
+// | project circuit_name, power_utilization, power_balance, total_capacity, total_consumption, maintenance_action
+// | order by power_utilization desc
+
+// Usage Example 4: Grid section interconnectivity analysis
+// power_line_connections()
+// | summarize 
+//     total_circuits = count(),
+//     highly_connected = countif(associated_circuit_count > 3),
+//     isolated_circuits = countif(associated_circuit_count <= 1),
+//     avg_connections = avg(associated_circuit_count),
+//     priority_switch_needed = countif(priority_switch_candidate != "Not Applicable")
+// | extend 
+//     interconnectivity_score = case(
+//         isolated_circuits > total_circuits * 0.3, "Poor",
+//         highly_connected < total_circuits * 0.2, "Fair",
+//         "Good"
+//     )
+
+// Usage Example 5: Maintenance planning by risk level
+// power_line_connections()
+// | summarize 
+//     circuit_count = count(),
+//     circuits = make_list(circuit_name),
+//     avg_utilization = avg(power_utilization),
+//     maintenance_actions = make_set(maintenance_action)
+// by failure_risk
+// | order by case(failure_risk, "Critical", 4, "High", 3, "Medium", 2, "Low", 1, 0) desc
+
+// =============================================================================
+// BUSINESS VALUE
+// =============================================================================
+// This view provides:
+// 1. **Priority Switch Planning**: Identifies optimal locations for failover switches
+// 2. **Maintenance Scheduling**: Risk-based prioritization of grid maintenance
+// 3. **Load Balancing**: Circuit utilization analysis for even power distribution
+// 4. **Failure Prevention**: Early warning system for grid connection issues
+// 5. **Upgrade Planning**: Data-driven decisions for grid expansion and improvements
+// =============================================================================

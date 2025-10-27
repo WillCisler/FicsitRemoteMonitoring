@@ -1,0 +1,99 @@
+// =============================================================================
+// POWER GENERATORS TABLE
+// =============================================================================
+// Purpose: Track individual power generator performance and efficiency over time
+// Business Context: Engineering-001 - Power Network Analysis
+// Data Source: RawData table where endpoint = 'getGenerators'
+// Update Frequency: Real-time via update policy
+// =============================================================================
+
+// Drop existing table if it exists (for clean deployment)
+.drop table power_generators ifexists
+
+// Create the power_generators fact table
+.create table power_generators (
+    timestamp: datetime,                    // When the data was collected
+    server: string,                         // Server identifier for multi-server deployments
+    generator_id: string,                   // Unique identifier for the generator
+    generator_name: string,                 // Display name of the generator
+    generator_class: string,                // Type/class of generator (e.g., Coal, Nuclear, Geothermal)
+    circuit_group_id: long,                 // Power circuit group this generator belongs to
+    circuit_id: long,                       // Specific circuit within the group
+    power_production_potential: real,       // Maximum power this generator can produce
+    current_production: real,               // Current power production output
+    production_efficiency: real,            // Efficiency percentage (0.0 to 1.0)
+    load_percentage: long,                  // Current load percentage (0-100)
+    fuel_resource: string,                  // Type of fuel being consumed
+    fuel_amount: real,                      // Current fuel amount in inventory
+    fuel_max_amount: real,                  // Maximum fuel capacity
+    fuel_percentage: real,                  // Fuel level percentage
+    is_full_speed: bool,                    // Whether generator is running at full capacity
+    can_start: bool,                        // Whether generator can be started
+    is_producing: bool,                     // Whether generator is currently producing power
+    somersloops: long,                      // Number of somersloops installed
+    power_shards: long,                     // Number of power shards installed
+    location_x: real,                       // X coordinate for location mapping
+    location_y: real,                       // Y coordinate for location mapping
+    location_z: real,                       // Z coordinate for location mapping
+    fuse_triggered: bool,                   // Whether the circuit fuse has been triggered
+    power_consumed: real,                   // Power consumed by the generator itself
+    max_power_consumed: real,               // Maximum power consumption for this generator
+    nuclear_warning: string,                // Nuclear waste warning status (if applicable)
+    geo_min_power: real,                    // Minimum geothermal power (if applicable)
+    geo_max_power: real,                    // Maximum geothermal power (if applicable)
+    ingestion_time: datetime                // When this record was ingested into the table
+)
+
+// Set table description for business users
+.alter table power_generators docstring "Individual power generator performance tracking for factory power network analysis. Enables monitoring of generator efficiency, fuel consumption, and power production trends over time."
+
+
+
+// Set data retention policy (90 days for detailed analysis)
+.alter table power_generators policy retention ```
+{
+    "SoftDeletePeriod": "90.00:00:00",
+    "Recoverability": "Enabled"
+}
+```
+
+// =============================================================================
+// SAMPLE QUERIES FOR TESTING
+// =============================================================================
+
+// Test Query 1: Get recent generator performance
+// power_generators
+// | where timestamp >= ago(1h)
+// | summarize 
+//     avg_efficiency = avg(production_efficiency),
+//     avg_load = avg(load_percentage),
+//     total_production = sum(current_production)
+//   by generator_class
+// | order by total_production desc
+
+// Test Query 2: Find generators with low efficiency
+// power_generators
+// | where timestamp >= ago(24h)
+// | where production_efficiency < 0.8
+// | summarize 
+//     avg_efficiency = avg(production_efficiency),
+//     location = any(strcat(location_x, ",", location_y, ",", location_z))
+//   by generator_id, generator_name
+// | order by avg_efficiency asc
+
+// Test Query 3: Monitor fuel levels across all generators
+// power_generators
+// | where timestamp >= ago(1h)
+// | where fuel_percentage < 0.2  // Less than 20% fuel
+// | project generator_name, fuel_resource, fuel_percentage, location_x, location_y, location_z
+// | order by fuel_percentage asc
+
+// =============================================================================
+// PERFORMANCE CONSIDERATIONS
+// =============================================================================
+// 1. Use time-based partitioning for large datasets
+// 2. Index on commonly queried columns (timestamp, generator_id, circuit_group_id)
+// 3. Consider materialized views for frequently accessed aggregations
+// 4. Monitor query performance and adjust indexes as needed
+// 5. Use appropriate data types to minimize storage overhead
+// =============================================================================

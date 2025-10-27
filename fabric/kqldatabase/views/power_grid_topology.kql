@@ -1,0 +1,148 @@
+// =============================================================================
+// POWER GRID TOPOLOGY VIEW
+// =============================================================================
+// Purpose: Visualize power network connections between grid sections
+// Business Context: Engineering-002 - Power Grid Clean up
+// Data Source: power_grid_connections + power_generators tables
+// Update Frequency: Real-time (view is computed on query)
+// =============================================================================
+
+// Drop existing function if it exists
+.drop function power_grid_topology ifexists
+
+// Create the power_grid_topology function (acts as a view)
+.create function power_grid_topology() {
+    power_grid_connections
+    | where timestamp >= ago(6h)  // Recent grid state
+    | summarize 
+        // Grid health metrics
+        avg_power_efficiency = avg(power_efficiency),
+        total_capacity = max(total_capacity),
+        total_consumption = max(total_consumption),
+        avg_surplus = avg(power_surplus),
+        
+        // Connection status
+        fuse_triggered_count = countif(fuse_triggered == true),
+        connection_issues = countif(connection_health != "Healthy"),
+        
+        // Battery metrics
+        avg_battery_percentage = avg(battery_percentage),
+        min_battery_percentage = min(battery_percentage),
+        battery_drain_time = max(battery_time_empty),
+        battery_charge_time = max(battery_time_full),
+        
+        // Network topology
+        associated_circuits = make_set(associated_circuits),
+        connected_generators_count = array_length(any(connected_generators)),
+        connected_machines_count = array_length(any(connected_machines)),
+        
+        // Timestamps
+        first_seen = min(timestamp),
+        last_seen = max(timestamp)
+    by circuit_group_id, circuit_id
+    | extend 
+        // Grid health categories
+        grid_health_status = case(
+            fuse_triggered_count > 0, "Critical - Fuse Triggered",
+            avg_power_efficiency < 0.70, "Poor - Low Efficiency",
+            avg_surplus < 0, "Warning - Overloaded",
+            avg_battery_percentage < 20, "Caution - Low Battery",
+            "Healthy"
+        ),
+        
+        // Priority for maintenance
+        maintenance_priority = case(
+            fuse_triggered_count > 0, 100,
+            avg_power_efficiency < 0.60, 90,
+            avg_surplus < 0, 80,
+            avg_battery_percentage < 15, 70,
+            avg_power_efficiency < 0.80, 50,
+            avg_battery_percentage < 30, 30,
+            0
+        ),
+        
+        // Grid utilization
+        utilization_percentage = case(
+            total_capacity > 0,
+            (total_consumption / total_capacity) * 100,
+            0.0
+        ),
+        
+        // Network size category
+        network_size = case(
+            connected_generators_count + connected_machines_count > 50, "Large",
+            connected_generators_count + connected_machines_count > 20, "Medium",
+            connected_generators_count + connected_machines_count > 5, "Small",
+            "Micro"
+        ),
+        
+        // Recommendations
+        recommendations = case(
+            fuse_triggered_count > 0, "Immediate: Reset fuses and check power balance",
+            avg_surplus < 0, "Urgent: Add more generators or reduce consumption",
+            avg_battery_percentage < 20, "Important: Check battery systems and charging",
+            avg_power_efficiency < 0.80, "Consider: Optimize grid layout and connections",
+            utilization_percentage > 90, "Monitor: Grid approaching capacity limits",
+            "Normal: Grid operating within parameters"
+        ),
+        
+        // Circuit identifier for easy reference
+        circuit_identifier = strcat("Group-", tostring(circuit_group_id), "/Circuit-", tostring(circuit_id))
+    | order by maintenance_priority desc, utilization_percentage desc
+}
+
+// Set function description for business users
+.alter function power_grid_topology docstring "Provides comprehensive view of power grid topology and health status. Identifies priority switches, connection issues, and maintenance requirements for grid optimization."
+
+// =============================================================================
+// SAMPLE USAGE QUERIES
+// =============================================================================
+
+// Usage Example 1: Critical grid sections needing immediate attention
+// power_grid_topology()
+// | where grid_health_status contains "Critical" or maintenance_priority >= 80
+// | project circuit_identifier, grid_health_status, utilization_percentage, recommendations
+// | order by maintenance_priority desc
+
+// Usage Example 2: Grid capacity planning
+// power_grid_topology()
+// | summarize 
+//     total_grids = count(),
+//     avg_utilization = avg(utilization_percentage),
+//     overloaded_grids = countif(utilization_percentage > 90),
+//     critical_grids = countif(grid_health_status contains "Critical")
+// | extend capacity_status = case(
+//     overloaded_grids > 0, "Action Required",
+//     avg_utilization > 75, "Monitor Closely", 
+//     "Adequate Capacity"
+// )
+
+// Usage Example 3: Battery backup analysis
+// power_grid_topology()
+// | where avg_battery_percentage < 50
+// | project circuit_identifier, avg_battery_percentage, battery_drain_time, battery_charge_time, network_size
+// | order by avg_battery_percentage asc
+
+// Usage Example 4: Network topology overview
+// power_grid_topology()
+// | summarize 
+//     grid_count = count(),
+//     total_generators = sum(connected_generators_count),
+//     total_machines = sum(connected_machines_count),
+//     avg_efficiency = avg(avg_power_efficiency)
+// by network_size
+// | extend 
+//     generators_per_grid = total_generators / grid_count,
+//     machines_per_grid = total_machines / grid_count
+// | order by grid_count desc
+
+// =============================================================================
+// BUSINESS VALUE
+// =============================================================================
+// This view provides:
+// 1. **Grid Health Monitoring**: Real-time status of power network sections
+// 2. **Maintenance Planning**: Priority-based grid maintenance scheduling
+// 3. **Capacity Management**: Utilization tracking and expansion planning
+// 4. **Failover Preparation**: Battery backup status and priority switch locations
+// 5. **Network Optimization**: Connection topology analysis for improvements
+// =============================================================================
