@@ -1,3 +1,5 @@
+# schemas for rawData
+
 ## GetPlayerData Response Schema
 
 ```json

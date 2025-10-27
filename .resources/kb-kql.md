@@ -30,12 +30,13 @@ When developing an ADX (Kusto) database in Fabric, follow these high-level best 
 
 <!-- Copilot-Researcher-Visualization -->
 
-| Best Practice                                | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                |
-| -------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Medallion Layers for Clear Architecture**  | Organize data into **Bronze**, **Silver**, and **Gold** layers. This medallion architecture incrementally improves data quality and structure at each stage. Raw data lands in _Bronze_ (for capture and history), refined data is in _Silver_ (cleaned, deduplicated), and aggregated or business-ready data is in _Gold_ (optimized for analytics).                                                                                                      |
-| **Real-Time Ingestion & Transformation**     | Use ADX **update policies** to automatically transform and enrich data as it moves from Bronze to Silver. This built-in streaming transformation capability removes the need for external ETL tools for real-time scenarios. Combine it with **retention policies** to clean up raw data when it's no longer needed.                                                                                                                                       |
-| **Fast Aggregation with Materialized Views** | Leverage **materialized views** on Silver data to produce Gold layer tables. Materialized views maintain up-to-date aggregated results (e.g. latest values or daily summaries) and drastically improve query performance by pre-computing results. They ensure that queries on Gold data are fast and cost-efficient.                                                                                                                                      |
-| **Optimize Schema and Queries**              | Design an efficient schema: use proper data types and avoid overly wide tables. For example, store timestamps as `datetime` (not long) and only use `decimal` when exact precision is needed. Keep tables "narrow" (fewer columns) when possible and denormalize data during ingestion to reduce expensive joins at query time. **Filter data early** in queries (use `where` before aggregating) and select only needed columns to minimize scanned data. |
+| Best Practice                               | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| ------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Medallion Layers for Clear Architecture** | Organize data into **Bronze**, **Silver**, and **Gold** layers. This medallion architecture incrementally improves data quality and structure at each stage. Raw data lands in _Bronze_ (for capture and history), refined data is in _Silver_ (cleaned, deduplicated), and aggregated or business-ready data is in _Gold_ (optimized for analytics).                                                                                                      |
+| **Real-Time Ingestion & Transformation**    | Use ADX **update policies** to automatically transform and enrich data as it moves from Bronze to Silver. This built-in streaming transformation capability removes the need for external ETL tools for real-time scenarios. Combine it with **retention policies** to clean up raw data when it's no longer needed.                                                                                                                                       |
+| **Functions Over Views for Reusability**    | Use **functions** instead of views in Azure Data Explorer for better performance and flexibility. Functions can be called with parameters and are more efficient than views. Create functions with `.create function` and reference them in update policies instead of inline queries. Functions support proper documentation with docstrings and can be tested independently.                                                                             |
+| **Proper KQL Deployment Syntax**            | Use consolidated deployment scripts with direct KQL commands. Separate multiple commands with semicolons when needed. Avoid multiple nested `.execute script` calls. Azure Data Explorer doesn't support traditional database indexes - rely on automatic column indexing instead. Use single consolidated deployment scripts with proper command sequencing for better maintainability and compatibility.                                                 |
+| **Optimize Schema and Queries**             | Design an efficient schema: use proper data types and avoid overly wide tables. For example, store timestamps as `datetime` (not long) and only use `decimal` when exact precision is needed. Keep tables "narrow" (fewer columns) when possible and denormalize data during ingestion to reduce expensive joins at query time. **Filter data early** in queries (use `where` before aggregating) and select only needed columns to minimize scanned data. |
 
 Let's break down these principles and others in more detail:
 
@@ -201,7 +202,14 @@ Writing KQL queries and commands in a clean, consistent style is important for c
       | project-away CustomerName                     // drop PII field
   }
   // Update policy: use TransformOrder to populate SilverOrders whenever OrdersRaw receives new data
-  .alter table SilverOrders policy update @'[{"Source": "OrdersRaw", "Query": "TransformOrder", "IsEnabled": true, "IsTransactional": true}]'
+  .alter table SilverOrders policy update @'[
+      {
+          "Source": "OrdersRaw",
+          "Query": "TransformOrder",
+          "IsEnabled": true,
+          "IsTransactional": true
+      }
+  ]'
 
   // Gold view: Latest Orders (only the most recent record per OrderID)
   .create materialized-view with (backfill=true) LatestOrders on table SilverOrders {
@@ -223,6 +231,125 @@ Writing KQL queries and commands in a clean, consistent style is important for c
 - **Testing Queries**: When you write complex queries, build them step by step, testing each part. Utilize the Kusto Explorer or web UI to format the query for you (there’s a “Format” button that will apply a default style if needed). A well-formatted query not only reduces the chance of mistakes but also makes optimization easier (you can spot which part of the query is doing what at a glance).
 
 By following these KQL formatting rules, your code will be easier to understand and maintain. Well-formatted queries and commands, coupled with adequate commenting, act as documentation for your system. Future you (or other team members) will thank you when they can quickly grasp the logic without deciphering a wall of text. Consistent style also reduces coding errors – e.g., missing a parenthesis is less likely when the structure is indented clearly.
+
+#### **2.1. KQL Syntax Best Practices for Azure Data Explorer**
+
+Working with Azure Data Explorer requires specific KQL syntax practices that differ from traditional databases:
+
+- **Use Functions Instead of Views**: Azure Data Explorer optimizes functions better than views. Functions can be parameterized, reused in update policies, and provide better performance for complex logic:
+
+  ```kusto
+  // ✅ Good: Create a function for reusable logic
+  .create function parse_generators_data() {
+      power_generators_raw
+      | where ingestion_time() > ago(5m)
+      | extend parsed_data = parse_json(raw_data)
+      | extend generator_id = tostring(parsed_data.ActorName)
+      | project generator_id, power_production, efficiency_percent
+  }
+
+  // ❌ Avoid: Views are less efficient and harder to parameterize
+  .create view generator_view as
+      power_generators_raw | extend parsed_data = parse_json(raw_data)
+  ```
+
+- **Consolidated Deployment Scripts**: Avoid multiple nested `.execute script` blocks in deployment scripts. Instead, use direct KQL commands with proper semicolon separation:
+
+  ```kusto
+  // ✅ Good: Direct commands with semicolons
+  .drop table power_generators ifexists;
+  .create table power_generators (
+      generator_id: string,
+      power_production: real,
+      efficiency_percent: real
+  );
+  .alter table power_generators policy retention "{"SoftDeletePeriod": "90.00:00:00"}";
+
+  // ❌ Avoid: Multiple nested execute blocks
+  .execute script <|
+      .drop table power_generators ifexists
+      .create table power_generators (...)
+  |>
+  .execute script <|
+      .alter table power_generators policy retention ...
+  |>
+  ```
+
+- **No Manual Indexing Required**: Azure Data Explorer automatically indexes all columns. Don't try to create traditional database indexes:
+
+  ```kusto
+  // ✅ Good: Let ADX handle indexing automatically
+  .create table power_generators (
+      generator_id: string,
+      timestamp: datetime,
+      power_production: real
+  )
+
+  // ❌ Avoid: Manual index creation (not supported in ADX)
+  .create table power_generators policy indexes [
+      {"IndexName": "idx_generator_id", "Columns": ["generator_id"]}
+  ]
+  ```
+
+- **Function References in Update Policies**: Use function names in update policies instead of inline queries for better maintainability:
+
+  ```kusto
+  // ✅ Good: Reference a function in update policy
+  .alter table power_generators policy update @'[
+      {
+          "Source": "power_generators_raw",
+          "Query": "parse_generators_data()",
+          "IsEnabled": true,
+          "IsTransactional": true
+      }
+  ]'
+
+  // ❌ Avoid: Inline complex queries in policies
+  .alter table power_generators policy update @'[
+      {
+          "Source": "power_generators_raw",
+          "Query": "power_generators_raw | where ingestion_time() > ago(5m) | extend ...",
+          "IsEnabled": true
+      }
+  ]'
+  ```
+
+- **Proper Command Termination**: Use semicolons to separate KQL management commands, especially in deployment scripts:
+
+  ```kusto
+  // ✅ Good: Proper command separation
+  .drop function parse_generators_data ifexists;
+  .create function parse_generators_data() { ... };
+  .alter table power_generators policy update @'[...]';
+
+  // ❌ Avoid: Missing semicolons can cause parsing errors
+  .drop function parse_generators_data ifexists
+  .create function parse_generators_data() { ... }
+  .alter table power_generators policy update @'[...]'
+  ```
+
+- **Deployment Script Structure**: Organize deployment scripts in logical phases with clear separation and validation:
+
+  ```kusto
+  // Phase 1: Create Tables
+  print "📋 Phase 1: Creating Tables...";
+  .drop table power_generators ifexists;
+  .create table power_generators (...);
+
+  // Phase 2: Create Functions
+  print "📋 Phase 2: Creating Functions...";
+  .drop function parse_generators_data ifexists;
+  .create function parse_generators_data() { ... };
+
+  // Phase 3: Create Update Policies
+  print "📋 Phase 3: Creating Update Policies...";
+  .alter table power_generators policy update @'[...]';
+
+  // Phase 4: Validation
+  print "🔍 Phase 4: Validation...";
+  .show tables | where TableName == "power_generators";
+  .show functions | where Name == "parse_generators_data";
+  ```
 
 ---
 

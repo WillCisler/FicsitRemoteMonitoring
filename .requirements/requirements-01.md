@@ -12,7 +12,7 @@ Edit a KQL database for the use of the Ficsit team to analyze sales data streams
 
 # Data source information 🛢️
 
-- **MCP Server**: `fabric-rti-mcp-ficsitv1`
+- **MCP Server**: `fabric-rti-mcp-in-ficsit`
 - **Database**: `ficsit-data`
 
 If you cannot connect to the KQL Server above to get the schema, all information of the Datawarehouse can be found in the file `..\FicsitRemote\.resources\schema.md`
