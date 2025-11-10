@@ -12,13 +12,13 @@
             "value": "sands"
         },
         "existingEventHubNamespace": {
-            "value": "satisfactory-eventhub-rwp7wtublc2uy"
+            "value": "satisfactory-eventhub-bh7pygddhw22e"
         },
         "existingEventHubName": {
             "value": "satisfactory-data"
         },
         "existingAppInsightsName": {
-            "value": "satisfactory-insights-rwp7wtublc2uy"
+            "value": "satisfactory-insights-bh7pygddhw22e"
         }
     }
 }

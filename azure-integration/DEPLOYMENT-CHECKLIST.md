@@ -177,6 +177,79 @@ Expected result: Should show power production/consumption over time
 
 ## Troubleshooting Common Issues
 
+### Deployment Errors
+
+#### Kudu Deployment Service Error (InternalServerError)
+
+**Symptoms**:
+
+- Error message: "Access to the path 'C:\home\LogFiles\kudu\deployment' is denied"
+- Function publish fails with PushDeploymentController error
+
+**Root Cause**: Azure Function App's Kudu service has file system permission issues or corrupted deployment state
+
+**Solutions** (try in order):
+
+1. **Restart Function App**:
+
+   ```bash
+   az functionapp restart --name <your-function-app-name> --resource-group <resource-group>
+   ```
+
+2. **Clear Deployment Cache via Portal**:
+
+   - Navigate to Function App → Development Tools → Advanced Tools (Kudu)
+   - Go to Debug Console → CMD
+   - Navigate to `D:\home\site\wwwroot` and delete all contents
+   - Retry deployment
+
+3. **Use ZIP Deployment Method**:
+
+   ```bash
+   # Build and package locally
+   func azure functionapp publish <your-function-app-name> --build-native-deps --publish-local-settings
+   ```
+
+4. **Reset Function App (last resort)**:
+
+   ```bash
+   # This will stop the app and clear all files
+   az functionapp deployment source delete --name <your-function-app-name> --resource-group <resource-group>
+   az functionapp restart --name <your-function-app-name> --resource-group <resource-group>
+   ```
+
+5. **Alternative: Use VS Code Extension**:
+
+   - Install Azure Functions extension for VS Code
+   - Use "Deploy to Function App" from command palette
+   - Often bypasses Kudu issues
+
+#### Authentication/Permission Errors During Deployment
+
+**Symptoms**: Access denied, authentication failed
+
+**Solutions**:
+
+1. **Re-authenticate Azure CLI**:
+
+   ```bash
+   az logout
+   az login
+   az account set --subscription <your-subscription-id>
+   ```
+
+2. **Check Function App Permissions**:
+
+   ```bash
+   az role assignment list --assignee <your-user-id> --resource-group <resource-group>
+   ```
+
+3. **Verify Function App Settings**:
+
+   ```bash
+   az functionapp config appsettings list --name <your-function-app-name> --resource-group <resource-group>
+   ```
+
 ### Function Not Executing
 
 **Symptoms**: No logs in Application Insights, no Event Hub messages

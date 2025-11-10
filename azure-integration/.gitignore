@@ -1,9 +1,17 @@
 # Build outputs
 bin/
 obj/
+function-app/bin/
+function-app/obj/
+function-app/publish/
 
 # Azure Functions
 local.settings.json.backup
+function-app/local.settings.json.backup
+
+# Deployment artifacts
+*.zip
+deploy.zip
 
 # Visual Studio
 .vs/

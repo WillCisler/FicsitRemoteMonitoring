@@ -16,13 +16,13 @@ This folder contains the complete KQL database implementation for the Ficsit Rem
 
 ### 📊 **Data Flow**
 
-```
+```txt
 RawData (Event Hub) → Update Policies → Fact Tables → Views → Analytics
 ```
 
 ### 📁 **Folder Structure**
 
-```
+```txt
 fabric/kqldatabase/
 ├── README.md                 # This documentation file
 ├── tables/                   # Table creation scripts

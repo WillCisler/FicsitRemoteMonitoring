@@ -113,13 +113,20 @@ The web server will be available at `http://localhost:8080` (or your server IP i
 
 ```bash
 # Navigate to the function directory
-cd azure-integration
+cd azure-integration/function-app
 
 # Build and deploy the Azure Function
 func azure functionapp publish <your-function-app-name>
 
 # Verify deployment - you should see SatisfactoryDataStreamer listed
 func azure functionapp list-functions <your-function-app-name>
+```
+
+**Alternative**: Use the deployment script from the project root:
+
+```bash
+# From azure-integration directory
+./scripts/deploy-function.ps1 -FunctionAppName <your-function-app-name>
 ```
 
 **Note**: The function is configured to run every 30 seconds and monitor 7 FRM endpoints.

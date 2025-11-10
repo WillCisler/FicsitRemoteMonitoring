@@ -1,6 +1,6 @@
 # Azure Data Explorer (Kusto) Development Best Practices in Microsoft Fabric
 
-### Who are you?
+## Who are you?
 
 You are a **KQL Developer** building and managing an Azure Data Explorer (ADX) Kusto database in Microsoft Fabric. This guide provides best practices and practical examples to help you design an efficient, maintainable, and high-performance Kusto database. It covers how to structure your data (using the medallion architecture), optimize KQL queries, and format KQL code for clarity and performance.
 
@@ -56,7 +56,7 @@ In practice, adopting this layered approach improves both **clarity** (each laye
 | **Silver** (`Silver*` tables)   | Cleaned, deduplicated, and enriched data. Personal data is removed or anonymized; new useful columns added. _Requirement:_ provide high-quality, query-ready data for internal analysis and to feed Gold layer[1](https://techcommunity.microsoft.com/blog/startupsatmicrosoftblog/building-a-real-time-medallion-architecture-using-eventhouse-in-microsoft-fabric/4110686)[1](https://techcommunity.microsoft.com/blog/startupsatmicrosoftblog/building-a-real-time-medallion-architecture-using-eventhouse-in-microsoft-fabric/4110686). |
 | **Gold** (`Gold*` tables/views) | Curated, aggregated data, often in the form of materialized views or final fact tables. _Requirement:_ support fast BI queries and dashboards with pre-aggregated results or the latest record state[1](https://techcommunity.microsoft.com/blog/startupsatmicrosoftblog/building-a-real-time-medallion-architecture-using-eventhouse-in-microsoft-fabric/4110686)[1](https://techcommunity.microsoft.com/blog/startupsatmicrosoftblog/building-a-real-time-medallion-architecture-using-eventhouse-in-microsoft-fabric/4110686).           |
 
-_(In Azure Fabric Real-Time Analytics, an “Eventstream” feeds Bronze, and an “Eventhouse” KQL database contains the tables.)_
+(In Azure Fabric Real-Time Analytics, an “Eventstream” feeds Bronze, and an “Eventhouse” KQL database contains the tables.)
 
 Using consistent naming (like prefixing table names with Bronze/Silver/Gold or similar) is recommended to quickly identify a table’s role. For example, in a sales analytics scenario you might have `SalesOrderHeader` in Bronze, `SilverSalesOrderHeader` with cleansed orders, and a `GoldSalesSummary` view with aggregated sales metrics. This convention makes the architecture self-documenting.
 
@@ -158,6 +158,7 @@ Writing KQL queries and commands in a clean, consistent style is important for c
   1. **Table and Schema Definitions** – Use `.create table ...` for each table with its schema. Group tables by layer or domain, and add comments as shown. Example: first all Bronze tables, then Silver, etc.
   2. **Table Policies** – After creating tables, apply policies: e.g., `.alter table X policy retention ...`, `.alter table X policy ingestiontime true`, `.alter table Y policy update ...`, `.create materialized-view ...`. Keep the policy commands immediately after the table they apply to, along with comments. This way, someone reading the script sees a table definition followed by its relevant settings. For instance, creating a Silver table and right after, adding the update policy that populates it from Bronze ensures context is together.
   3. **Functions** – If you use helper functions (via `.create function`), define them before the update policies or queries that use them. Include a **docstring** in your functions to describe what they do[1](https://techcommunity.microsoft.com/blog/startupsatmicrosoftblog/building-a-real-time-medallion-architecture-using-eventhouse-in-microsoft-fabric/4110686). For example:
+
      ```kusto
      .create function with (docstring = "Add ingestion time to raw data")
      ParseAddress() {
@@ -165,7 +166,9 @@ Writing KQL queries and commands in a clean, consistent style is important for c
          | extend IngestionDate = ingestion_time()
      }
      ```
+
      This function (ParseAddress) takes data from the `Address` table and adds an ingestion timestamp. The docstring provides inline documentation. Such a function can then be referenced in an update policy or in queries.
+
   4. **Queries or Views** – If you have saved queries or need to create certain views (materialized views or functions for querying), include them after the data transformation definitions.
 
 - **Example – Table, Update Policy, and Materialized View**: Below is a simplified example that ties together table creation, an update policy via a function, and a materialized view. It demonstrates good formatting and commenting practices:
