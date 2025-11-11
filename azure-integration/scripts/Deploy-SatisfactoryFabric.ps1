@@ -109,7 +109,7 @@ function Deploy-SatisfactoryFabricIntegration {
         Write-Info "3. Deploying Azure infrastructure..."
         Write-Info "   This may take 5-10 minutes..."
         
-        $templatePath = Join-Path $PSScriptRoot "infrastructure\satisfactory-fabric-integration.json"
+        $templatePath = Join-Path $PSScriptRoot "..\infrastructure\satisfactory-fabric-integration-fixed.bicep"
         if (-not (Test-Path $templatePath)) {
             Write-Error "Template file not found: $templatePath"
             return

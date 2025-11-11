@@ -26,8 +26,8 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2023-01-01' = {
   properties: {
     supportsHttpsTrafficOnly: true
     minimumTlsVersion: 'TLS1_2'
-    allowBlobPublicAccess: false
-    allowSharedKeyAccess: false  // Disable key-based access for security
+    allowBlobPublicAccess: true
+    allowSharedKeyAccess: true
     publicNetworkAccess: 'Enabled'
     networkAcls: {
       defaultAction: 'Allow'
@@ -150,26 +150,6 @@ resource functionApp 'Microsoft.Web/sites@2023-01-01' = {
   }
 }
 
-resource functionAppSettings 'Microsoft.Web/sites/config@2023-01-01' = {
-  parent: functionApp
-  name: 'appsettings'
-  properties: {
-    // Use managed identity for storage instead of connection string
-    AzureWebJobsStorage__accountName: storageAccountName
-    AzureWebJobsStorage__credential: 'managedidentity'
-    FUNCTIONS_EXTENSION_VERSION: '~4'
-    FUNCTIONS_WORKER_RUNTIME: 'dotnet-isolated'
-    APPINSIGHTS_INSTRUMENTATIONKEY: applicationInsights.properties.InstrumentationKey
-    APPLICATIONINSIGHTS_CONNECTION_STRING: applicationInsights.properties.ConnectionString
-    // Application-specific settings
-    EVENT_HUB_NAMESPACE: '${eventHubNamespaceName}.servicebus.windows.net'
-    EVENT_HUB_NAME: eventHubName
-    SATISFACTORY_FRM_URL: satisfactoryServerUrl
-    SATISFACTORY_SERVER_NAME: satisfactoryServerName
-  }
-}
-
-// Role assignment for Event Hub data sending
 resource eventHubDataSenderRole 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = {
   name: guid(resourceGroup().id, functionAppName, 'EventHubDataSender')
   scope: eventHubNamespace
@@ -180,41 +160,14 @@ resource eventHubDataSenderRole 'Microsoft.Authorization/roleAssignments@2020-04
   }
 }
 
-// Role assignment for storage blob data access (for Function App runtime)
-resource storageBlobDataOwnerRole 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = {
-  name: guid(resourceGroup().id, functionAppName, 'StorageBlobDataOwner')
-  scope: storageAccount
-  properties: {
-    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'b7e6dc6d-f1e8-4753-8033-0f276bb0955b')
-    principalId: functionApp.identity.principalId
-    principalType: 'ServicePrincipal'
-  }
-}
-
-// Role assignment for storage queue data access (for Function App runtime)
-resource storageQueueDataContributorRole 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = {
-  name: guid(resourceGroup().id, functionAppName, 'StorageQueueDataContributor')
-  scope: storageAccount
-  properties: {
-    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '974c5e8b-45b9-4653-ba55-5f855dd0fb88')
-    principalId: functionApp.identity.principalId
-    principalType: 'ServicePrincipal'
-  }
-}
-
-// Role assignment for storage table data access (for Function App runtime)
-resource storageTableDataContributorRole 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = {
-  name: guid(resourceGroup().id, functionAppName, 'StorageTableDataContributor')
-  scope: storageAccount
-  properties: {
-    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '0a9a7e1f-b9d0-4cc4-a60d-0319b160aaa3')
-    principalId: functionApp.identity.principalId
-    principalType: 'ServicePrincipal'
-  }
-}
-
 output functionAppName string = functionAppName
 output eventHubNamespace string = eventHubNamespaceName
 output eventHubName string = eventHubName
 output storageAccountName string = storageAccountName
 output applicationInsightsName string = applicationInsightsName
+output storageConnectionString string = 'DefaultEndpointsProtocol=https;AccountName=${storageAccountName};EndpointSuffix=${environment().suffixes.storage};AccountKey=${storageAccount.listKeys().keys[0].value}'
+output appInsightsInstrumentationKey string = applicationInsights.properties.InstrumentationKey
+output appInsightsConnectionString string = applicationInsights.properties.ConnectionString
+output eventHubConnectionString string = '${eventHubNamespaceName}.servicebus.windows.net'
+output satisfactoryServerUrl string = satisfactoryServerUrl
+output satisfactoryServerName string = satisfactoryServerName
