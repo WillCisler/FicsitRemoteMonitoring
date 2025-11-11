@@ -109,6 +109,18 @@ In your Satisfactory game, open the console (`` ` `` key) and run:
 
 The web server will be available at `http://localhost:8080` (or your server IP if hosted remotely).
 
+#### How to test endpoints
+
+```ps1
+.\test-endpoints.ps1 -SatisfactoryServerUrl "http://136.243.46.118:8080" -ServerName "sands"
+
+
+.\test-endpoints.ps1 -SatisfactoryServerUrl "http://136.243.46.118:8080" -ShowRawJson
+
+
+.\test-endpoints.ps1 -SatisfactoryServerUrl "http://136.243.46.118:8080" -SaveToFile
+```
+
 ### 3. Deploy Function Code
 
 ```bash
@@ -384,36 +396,36 @@ var enrichedData = new {
 - **Storage**: Minimal costs for function storage
 - **Total estimated cost**: $15-30/month for typical usage
 
-## Next Steps
+## Quick Start
 
-1. **Deploy the infrastructure** using the Bicep template
-2. **Install and configure** the FRM mod in Satisfactory
-3. **Set up Fabric workspace** and connect to Event Hubs
-4. **Create dashboards** for real-time monitoring
-5. **Build analytics** for optimization insights
+The fastest way to get started is using our automated deployment script:
 
-For detailed deployment validation, see [Deployment Checklist](DEPLOYMENT-CHECKLIST.md).
+```powershell
+cd azure-integration/scripts
+.\Deploy-SatisfactoryFabric.ps1 -ResourceGroupName "ficsit-production" -Location "westus3" -SatisfactoryServerUrl "http://your-server:8080" -SatisfactoryServerName "your-server"
+```
+
+This will deploy all Azure resources, configure security with managed identity, and deploy the function code automatically.
 
 ## Documentation
 
-- **[Microsoft Fabric Setup Guide](FABRIC-SETUP.md)**: Complete Fabric configuration
-- **[Deployment Checklist](DEPLOYMENT-CHECKLIST.md)**: Step-by-step validation and testing
+- **[Deployment Guide & Troubleshooting](Deployment-Guide-and-Validation.md)**: Complete deployment walkthrough with troubleshooting for common issues
+- **[Microsoft Fabric Setup Guide](FABRIC-SETUP.md)**: Configure Fabric to consume Event Hub data
+- **[Endpoint Frequency Configuration](ENDPOINT-FREQUENCY-CONFIG.md)**: Customize data collection schedules
 - **[FRM Documentation](https://docs.ficsit.app/ficsitremotemonitoring/latest/)**: Official mod documentation
+
+## Architecture Principles
+
+This solution follows Azure Well-Architected Framework principles:
+
+- **Reliability**: Retry policies, error handling, comprehensive monitoring
+- **Security**: Managed identity, HTTPS enforcement, least privilege RBAC
+- **Cost Optimization**: Consumption-based pricing, configurable data retention
+- **Operational Excellence**: Infrastructure as Code, automated deployment, logging
+- **Performance Efficiency**: Concurrent processing, optimal Event Hub partitioning
 
 ## Support and Resources
 
 - **FRM Mod Community**: [Discord](https://discord.gg/c6446HTHpu)
 - **Azure Documentation**: [Azure Functions](https://docs.microsoft.com/azure/azure-functions/) | [Event Hubs](https://docs.microsoft.com/azure/event-hubs/)
 - **Microsoft Fabric**: [Documentation](https://docs.microsoft.com/fabric/) | [KQL Reference](https://docs.microsoft.com/azure/data-explorer/kql-quick-reference)
-
-## Contributing
-
-This solution follows Azure Well-Architected Framework principles:
-
-- **Reliability**: Retry policies, error handling, monitoring
-- **Security**: Managed identity, HTTPS enforcement, least privilege access
-- **Cost Optimization**: Consumption-based pricing, configurable retention
-- **Operational Excellence**: Comprehensive logging, automated deployment
-- **Performance Efficiency**: Concurrent processing, optimal partitioning
-
-To contribute improvements or report issues, please follow standard Azure development practices and ensure all changes maintain these principles.

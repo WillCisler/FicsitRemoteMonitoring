@@ -1,27 +1,29 @@
 # Satisfactory Data Streamer - Endpoint Frequency Configuration
 
-This document explains how to configure the frequency of different FRM API endpoints without needing to understand CRON expressions.
+This document explains how to configure the frequency of different FRM API endpoints and customize the data collection schedule.
 
-## Current Configuration
+## Current Function Configuration
 
-### High Frequency (Every 500ms)
+The solution uses 4 separate Azure Functions with different timer schedules:
 
-**Real-time critical data**
+### High Frequency (Every 1 second) - `SatisfactoryDataStreamer_HighFreq`
+
+**Real-time critical data** - Timer: `"0/1 * * * * *"`
 
 - `getPower` - Power grid status monitoring
 - `getPlayer` - Player status and location tracking
 
-### Medium Frequency (Every 5 seconds)
+### Medium Frequency (Every 5 seconds) - `SatisfactoryDataStreamer_MediumFreq`
 
-**Semi-frequent updates**
+**Semi-frequent updates** - Timer: `"0/5 * * * * *"`
 
 - `getGenerators` - Power generation status
 - `getVehicles` - Train/truck/drone status
 - `getSessionInfo` - Session metadata
 
-### Standard Frequency (Every 30 seconds)
+### Standard Frequency (Every 30 seconds) - `SatisfactoryDataStreamer_StandardFreq`
 
-**Less critical data**
+**Less critical data** - Timer: `"0/30 * * * * *"`
 
 - `getFactory` - All factory buildings
 - `getExtractor` - Resource extraction rates
@@ -33,6 +35,13 @@ This document explains how to configure the frequency of different FRM API endpo
 - `getHypertube` - Hyperloop networks
 - `getSplitterMerger` - Factory connection points
 - `getThroughputCounter` - Flow monitoring
+
+### Legacy Function (Every 30 seconds) - `SatisfactoryDataStreamer`
+
+**Backward compatibility** - Timer: `"0/30 * * * * *"`
+
+- Redirects to standard frequency function
+- Can be removed in future versions
 
 ## How to Change Frequencies
 
