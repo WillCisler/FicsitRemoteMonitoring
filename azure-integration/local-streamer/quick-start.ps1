@@ -27,7 +27,7 @@ if ($Build -or (-not (Test-Path "publish/SatisfactoryLocalStreamer.exe"))) {
         exit 1
     }
     
-    Write-Host "✓ Build successful" -ForegroundColor Green
+    Write-Host "Build successful" -ForegroundColor Green
     Write-Host ""
 }
 

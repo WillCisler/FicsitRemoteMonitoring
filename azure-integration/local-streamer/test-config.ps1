@@ -43,16 +43,16 @@ foreach ($endpoint in $testEndpoints) {
     try {
         $response = Invoke-WebRequest -Uri $url -Method Get -TimeoutSec 10 -ErrorAction Stop
         if ($response.StatusCode -eq 200) {
-            Write-Host "  ✓ SUCCESS (Status: $($response.StatusCode))" -ForegroundColor Green
+            Write-Host "  SUCCESS (Status: $($response.StatusCode))" -ForegroundColor Green
             $successCount++
         }
         else {
-            Write-Host "  ✗ FAILED (Status: $($response.StatusCode))" -ForegroundColor Red
+            Write-Host "  FAILED (Status: $($response.StatusCode))" -ForegroundColor Red
             $failCount++
         }
     }
     catch {
-        Write-Host "  ✗ FAILED: $($_.Exception.Message)" -ForegroundColor Red
+        Write-Host "  FAILED: $($_.Exception.Message)" -ForegroundColor Red
         $failCount++
     }
 }
@@ -76,14 +76,14 @@ Write-Host ""
 try {
     $azAccount = az account show 2>&1 | ConvertFrom-Json
     if ($azAccount) {
-        Write-Host "✓ Azure CLI is authenticated" -ForegroundColor Green
+        Write-Host "Azure CLI is authenticated" -ForegroundColor Green
         Write-Host "  Account: $($azAccount.user.name)" -ForegroundColor Yellow
         Write-Host "  Subscription: $($azAccount.name)" -ForegroundColor Yellow
         Write-Host ""
     }
 }
 catch {
-    Write-Host "✗ Azure CLI is NOT authenticated" -ForegroundColor Red
+    Write-Host "Azure CLI is NOT authenticated" -ForegroundColor Red
     Write-Host "  Run: az login" -ForegroundColor Yellow
     Write-Host ""
 }
@@ -95,9 +95,9 @@ Write-Host "==================================================================" 
 Write-Host ""
 
 if ($successCount -eq $testEndpoints.Count) {
-    Write-Host "✓ All tests passed! Ready to run the streamer." -ForegroundColor Green
+    Write-Host "All tests passed! Ready to run the streamer." -ForegroundColor Green
 }
 else {
-    Write-Host "⚠ Some tests failed. Please fix the issues above before running." -ForegroundColor Yellow
+    Write-Host "WARNING: Some tests failed. Please fix the issues above before running." -ForegroundColor Yellow
 }
 Write-Host ""

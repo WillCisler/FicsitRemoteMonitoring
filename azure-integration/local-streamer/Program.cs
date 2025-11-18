@@ -54,13 +54,12 @@ try
 
     var host = builder.Build();
 
-    // Display startup configuration
-    var logger = host.Services.GetRequiredService<Serilog.ILogger>();
-    logger.Information("FRM URL: {Url}", configuration.GetValue<string>("Satisfactory:FrmUrl"));
-    logger.Information("Server Name: {Server}", configuration.GetValue<string>("Satisfactory:ServerName"));
-    logger.Information("Event Hub Namespace: {Namespace}", configuration.GetValue<string>("EventHub:Namespace"));
-    logger.Information("Event Hub Name: {Name}", configuration.GetValue<string>("EventHub:Name"));
-    logger.Information("Using Connection String: {UseConnStr}", configuration.GetValue<bool>("EventHub:UseConnectionString"));
+    // Display startup configuration using static Serilog logger
+    Log.Information("FRM URL: {Url}", configuration.GetValue<string>("Satisfactory:FrmUrl"));
+    Log.Information("Server Name: {Server}", configuration.GetValue<string>("Satisfactory:ServerName"));
+    Log.Information("Event Hub Namespace: {Namespace}", configuration.GetValue<string>("EventHub:Namespace"));
+    Log.Information("Event Hub Name: {Name}", configuration.GetValue<string>("EventHub:Name"));
+    Log.Information("Using Connection String: {UseConnStr}", configuration.GetValue<bool>("EventHub:UseConnectionString"));
     
     Log.Information("=================================================================");
     Log.Information("Press Ctrl+C to stop the service");
