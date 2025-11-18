@@ -5,14 +5,16 @@ This solution streams real-time data from your Satisfactory game (via the Ficsit
 ## Architecture
 
 ```
-Satisfactory Game + FRM Mod → Azure Function → Event Hubs → Microsoft Fabric (Eventhouse/Lakehouse)
-                                     ↓
-                            Application Insights (Monitoring)
+Satisfactory Game + FRM Mod → Azure Function (Cloud) → Event Hubs → Microsoft Fabric (Eventhouse/Lakehouse)
+                           OR                    ↓
+                           → Local Streamer → Application Insights (Monitoring)
+                             (on same PC)
 ```
 
 ### Key Components
 
-- **Azure Function**: Timer-triggered serverless function (C#) that polls FRM endpoints
+- **Azure Function**: Timer-triggered serverless function (C#) that polls FRM endpoints from the cloud
+- **Local Streamer**: NEW! Standalone Windows app that runs on the same PC as Satisfactory (bypasses API limits)
 - **Event Hubs**: High-throughput data ingestion service for streaming data
 - **Microsoft Fabric**: Cloud analytics platform (Eventhouse for real-time, Lakehouse for historical)
 - **Managed Identity**: Secure authentication without credentials
@@ -121,7 +123,9 @@ The web server will be available at `http://localhost:8080` (or your server IP i
 .\test-endpoints.ps1 -SatisfactoryServerUrl "http://136.243.46.118:8080" -SaveToFile
 ```
 
-### 3. Deploy Function Code
+### 3. Deploy Function Code OR Run Local Streamer
+
+**Option A: Azure Function (Cloud-based)**
 
 ```bash
 # Navigate to the function directory
@@ -142,6 +146,30 @@ func azure functionapp list-functions <your-function-app-name>
 ```
 
 **Note**: The function is configured to run every 30 seconds and monitor 7 FRM endpoints.
+
+**Option B: Local Streamer (Runs on same PC as Satisfactory)**
+
+Perfect for dedicated servers with API limitations or to eliminate cloud compute costs.
+
+```powershell
+# Navigate to local-streamer directory
+cd azure-integration/local-streamer
+
+# Build and run
+.\quick-start.ps1 -Build -Test -Run
+
+# Or install as Windows Service (requires Admin)
+.\quick-start.ps1 -Build -Service
+```
+
+See the [Local Streamer README](local-streamer/README.md) for complete setup instructions.
+
+**Benefits of Local Streamer:**
+
+- ✅ No server API limits (localhost HTTP calls)
+- ✅ Lower latency (~1-5ms vs 50-200ms)
+- ✅ No Azure Function compute costs
+- ✅ Same Event Hub destination as cloud function
 
 ### 4. Configure Microsoft Fabric
 
