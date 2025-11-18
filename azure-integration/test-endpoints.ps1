@@ -15,12 +15,29 @@ param(
     [switch]$SaveToFile
 )
 
-# FRM API endpoints
+# FRM API endpoints - organized by frequency tier
 $endpoints = @{
+    # High-frequency endpoints (every 1 second)
     "getPower" = "/getPower"
-    "getFactory" = "/getFactory" 
     "getPlayer" = "/getPlayer"
+    
+    # Medium-frequency endpoints (every 5 seconds)
+    "getGenerators" = "/getGenerators"
+    "getVehicles" = "/getVehicles"
+    "getSessionInfo" = "/getSessionInfo"
+    
+    # Standard-frequency endpoints (every 30 seconds)
+    "getFactory" = "/getFactory"
     "getExtractor" = "/getExtractor"
+    "getBelts" = "/getBelts"
+    "getLifts" = "/getLifts"
+    "getPipes" = "/getPipes"
+    "getPumps" = "/getPumps"
+    "getSplitterMerger" = "/getSplitterMerger"
+    "getCables" = "/getCables"
+    "getTrainRails" = "/getTrainRails"
+    "getHypertube" = "/getHypertube"
+    "getThroughputCounter" = "/getThroughputCounter"
 }
 
 Write-Host "🔍 Testing Satisfactory FRM Endpoints" -ForegroundColor Green
@@ -82,7 +99,7 @@ foreach ($endpointName in $endpoints.Keys) {
         }
     }
     
-    Start-Sleep -Milliseconds 500  # Small delay between requests
+    Start-Sleep -Milliseconds 8000  # 8w second delay between requests to avoid server overload
 }
 
 Write-Host ("-" * 60)

@@ -63,13 +63,14 @@ namespace SatisfactoryDataStreamer
         private readonly string[] _standardFrequencyEndpoints = {
             "getFactory",         // All factory buildings
             "getExtractor",       // Resource extraction rates
-            "getBelts",           // Conveyor belt networks
+            "getBelts",           // Conveyor belt networks - DIGITAL TWIN: material flow
             "getLifts",           // Conveyor lifts  
-            "getPipes",           // Pipeline networks
+            "getPipes",           // Pipeline networks - DIGITAL TWIN: fluid flow
+            "getPumps",           // Pipeline pumps - DIGITAL TWIN: fluid transport
+            "getSplitterMerger",       // Belt/pipe splitters - DIGITAL TWIN: flow splitting
             "getCables",          // Power cables
             "getTrainRails",      // Railway connections
             "getHypertube",       // Hyperloop networks
-            "getSplitterMerger",  // Factory connection points
             "getThroughputCounter" // Flow monitoring
         };
 
