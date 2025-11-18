@@ -1,0 +1,128 @@
+PS C:\repos\FicsitRemoteMonitoring\azure-integration\local-streamer> .\quick-start.ps1 -Build -Test -Run
+==================================================================
+Satisfactory Local Data Streamer - Quick Start
+==================================================================
+
+Building application...
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  SatisfactoryLocalStreamer -> C:\repos\FicsitRemoteMonitoring\azure-integration\local-streamer\bin\Release\net8.0\win-x64\SatisfactoryLocalStreamer.dll
+  SatisfactoryLocalStreamer -> C:\repos\FicsitRemoteMonitoring\azure-integration\local-streamer\publish\
+Build successful
+
+Testing configuration...
+==================================================================
+Satisfactory Local Streamer - Configuration Test
+==================================================================
+
+Reading configuration from: appsettings.Production.json
+FRM URL: http://localhost:8080
+Server Name: sands
+
+==================================================================
+Testing FRM Endpoint Connectivity
+==================================================================
+
+Testing: http://localhost:8080/getPower
+  SUCCESS (Status: 200)
+Testing: http://localhost:8080/getPlayer
+  SUCCESS (Status: 200)
+Testing: http://localhost:8080/getFactory
+  SUCCESS (Status: 200)
+
+Results: 3 succeeded, 0 failed
+
+==================================================================
+Testing Azure Authentication
+==================================================================
+
+Azure CLI is authenticated
+  Account: admin@MngEnvMCAP561417.onmicrosoft.com
+  Subscription: ME-MngEnvMCAP561417-willcisler-5
+
+==================================================================
+Configuration Test Complete
+==================================================================
+
+All tests passed! Ready to run the streamer.
+
+
+Starting application in console mode...
+Environment: Production
+Press Ctrl+C to stop
+
+[18:14:04 INF] =================================================================
+[18:14:04 INF] Satisfactory Local Data Streamer starting...
+[18:14:04 INF] Environment: Production
+[18:14:04 INF] =================================================================
+[18:14:04 INF] FRM URL: http://localhost:8080
+[18:14:04 INF] Server Name: sands
+[18:14:04 INF] Event Hub Namespace: satisfactory-eventhub-2b6hu7bcanl2i.servicebus.windows.net
+[18:14:04 INF] Event Hub Name: satisfactory-data
+[18:14:04 INF] Using Connection String: False
+[18:14:04 INF] =================================================================
+[18:14:04 INF] Press Ctrl+C to stop the service
+[18:14:04 INF] =================================================================
+[18:14:04 INF] Using DefaultAzureCredential for Event Hub authentication
+[18:14:04 INF] Event Hub Namespace: satisfactory-eventhub-2b6hu7bcanl2i.servicebus.windows.net
+[18:14:04 INF] Event Hub Name: satisfactory-data
+[18:14:04 WRN] Make sure you've run 'az login' on this machine before starting
+[18:14:04 INF] Connecting to Event Hub at: satisfactory-eventhub-2b6hu7bcanl2i.servicebus.windows.net
+[18:14:04 INF] Data Streamer initialized
+[18:14:04 INF] FRM Base URL: http://localhost:8080
+[18:14:04 INF] Server Name: sands
+[18:14:04 INF] Max Concurrent Requests: 5
+[18:14:04 INF] High Freq Endpoints: 2
+[18:14:04 INF] Medium Freq Endpoints: 3
+[18:14:04 INF] Standard Freq Endpoints: 11
+[18:14:04 INF] Satisfactory Data Stream Worker starting...
+[18:14:04 INF] High Frequency: True (1s)
+[18:14:04 INF] Medium Frequency: True (5s)
+[18:14:04 INF] Standard Frequency: True (30s)
+[18:14:04 INF] High-frequency timer started (every 1s)
+[18:14:04 INF] Medium-frequency timer started (every 5s)
+[18:14:04 INF] Standard-frequency timer started (every 30s)
+[18:14:04 INF] All enabled timers started. Streaming data to Event Hub...
+[18:14:09 WRN] FRM endpoint getPumps returned NotFound
+[18:14:09 WRN] Retry 0 after 1s for endpoint (Status: NotFound)
+[18:14:09 WRN] Event too large for batch for endpoint getBelts
+[18:14:09 WRN] Event too large for batch for endpoint getPipes
+[18:14:10 WRN] Event too large for batch for endpoint getCables
+[18:14:10 WRN] FRM endpoint getPumps returned NotFound
+[18:14:10 WRN] Retry 1 after 2s for endpoint (Status: NotFound)
+[18:14:12 WRN] FRM endpoint getPumps returned NotFound
+[18:14:12 WRN] Retry 2 after 4s for endpoint (Status: NotFound)
+[18:14:16 WRN] FRM endpoint getPumps returned NotFound
+[18:14:16 ERR] Failed to fetch data from getPumps after retries. Status: NotFound
+[18:14:35 WRN] Event too large for batch for endpoint getBelts
+[18:14:35 WRN] FRM endpoint getPumps returned NotFound
+[18:14:35 WRN] Retry 0 after 1s for endpoint (Status: NotFound)
+[18:14:35 WRN] Event too large for batch for endpoint getPipes
+[18:14:35 WRN] Event too large for batch for endpoint getCables
+[18:14:36 WRN] FRM endpoint getPumps returned NotFound
+[18:14:36 WRN] Retry 1 after 2s for endpoint (Status: NotFound)
+[18:14:38 WRN] FRM endpoint getPumps returned NotFound
+[18:14:38 WRN] Retry 2 after 4s for endpoint (Status: NotFound)
+[18:14:42 WRN] FRM endpoint getPumps returned NotFound
+[18:14:42 ERR] Failed to fetch data from getPumps after retries. Status: NotFound
+[18:15:05 WRN] Event too large for batch for endpoint getBelts
+[18:15:05 WRN] FRM endpoint getPumps returned NotFound
+[18:15:05 WRN] Retry 0 after 1s for endpoint (Status: NotFound)
+[18:15:05 WRN] Event too large for batch for endpoint getPipes
+[18:15:05 WRN] Event too large for batch for endpoint getCables
+[18:15:06 WRN] FRM endpoint getPumps returned NotFound
+[18:15:06 WRN] Retry 1 after 2s for endpoint (Status: NotFound)
+[18:15:08 WRN] FRM endpoint getPumps returned NotFound
+[18:15:08 WRN] Retry 2 after 4s for endpoint (Status: NotFound)
+[18:15:12 WRN] FRM endpoint getPumps returned NotFound
+[18:15:12 ERR] Failed to fetch data from getPumps after retries. Status: NotFound
+[18:15:24 INF] Satisfactory Data Stream Worker stopping...
+[18:15:24 INF] Medium-frequency timer cancelled
+[18:15:24 INF] High-frequency timer cancelled
+[18:15:24 INF] Standard-frequency timer cancelled
+[18:15:24 INF] All timers stopped. Worker shutting down.
+[18:15:24 INF] Worker stopped successfully
+[18:15:24 INF] Disposing Data Streamer resources
+[18:15:24 INF] Satisfactory Local Data Streamer stopped successfully
