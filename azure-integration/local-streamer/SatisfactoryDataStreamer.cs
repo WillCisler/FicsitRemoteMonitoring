@@ -109,12 +109,26 @@ public class SatisfactoryDataStreamer : IDisposable
         {
             // Use DefaultAzureCredential (Azure CLI, Managed Identity, etc.)
             _logger.LogInformation("Using DefaultAzureCredential for Event Hub authentication");
-            _logger.LogInformation("Make sure you've run 'az login' on this machine");
-            var credential = new DefaultAzureCredential();
-            var fullyQualifiedNamespace = eventHubNamespace.Contains("://") 
-                ? eventHubNamespace 
-                : $"{eventHubNamespace}";
-            return new EventHubProducerClient(fullyQualifiedNamespace, eventHubName, credential);
+            _logger.LogInformation("Event Hub Namespace: {Namespace}", eventHubNamespace);
+            _logger.LogInformation("Event Hub Name: {Name}", eventHubName);
+            _logger.LogWarning("Make sure you've run 'az login' on this machine before starting");
+            
+            try
+            {
+                var credential = new DefaultAzureCredential();
+                // Remove https:// if present, EventHubProducerClient expects just the hostname
+                var fullyQualifiedNamespace = eventHubNamespace
+                    .Replace("https://", "")
+                    .Replace("http://", "");
+                
+                _logger.LogInformation("Connecting to Event Hub at: {FQDN}", fullyQualifiedNamespace);
+                return new EventHubProducerClient(fullyQualifiedNamespace, eventHubName, credential);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to create Event Hub client. Have you run 'az login'?");
+                throw;
+            }
         }
     }
 
