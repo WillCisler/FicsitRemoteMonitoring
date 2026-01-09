@@ -66,10 +66,9 @@ namespace SatisfactoryDataStreamer
             "getBelts",           // Conveyor belt networks - DIGITAL TWIN: material flow
             "getLifts",           // Conveyor lifts  
             "getPipes",           // Pipeline networks - DIGITAL TWIN: fluid flow
-            "getPumps",           // Pipeline pumps - DIGITAL TWIN: fluid transport
+            "getPump",            // Pipeline pumps - DIGITAL TWIN: fluid transport
             "getSplitterMerger",       // Belt/pipe splitters - DIGITAL TWIN: flow splitting
             "getCables",          // Power cables
-            "getTrainRails",      // Railway connections
             "getHypertube",       // Hyperloop networks
             "getThroughputCounter" // Flow monitoring
         };
