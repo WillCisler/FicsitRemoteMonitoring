@@ -237,40 +237,166 @@ namespace SatisfactoryDataStreamer
             }
         }
 
+        private List<object> ChunkArrayResponse(JsonElement data, string endpoint)
+        {
+            var chunks = new List<object>();
+            var maxItemsPerChunk = int.Parse(Environment.GetEnvironmentVariable("MAX_ITEMS_PER_CHUNK") ?? "50");
+            var excludedEndpoints = (Environment.GetEnvironmentVariable("CHUNKING_EXCLUDED_ENDPOINTS") ?? "getSessionInfo")
+                .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+            // Skip chunking for excluded endpoints
+            if (excludedEndpoints.Contains(endpoint))
+            {
+                chunks.Add(data);
+                return chunks;
+            }
+
+            // Check if data is an array
+            if (data.ValueKind != JsonValueKind.Array)
+            {
+                chunks.Add(data);
+                return chunks;
+            }
+
+            var array = data.EnumerateArray().ToList();
+            var totalItems = array.Count;
+
+            // If array is small enough, don't chunk
+            if (totalItems <= maxItemsPerChunk)
+            {
+                chunks.Add(array);
+                return chunks;
+            }
+
+            // Split into chunks
+            for (int i = 0; i < totalItems; i += maxItemsPerChunk)
+            {
+                var chunk = array.Skip(i).Take(maxItemsPerChunk).ToList();
+                chunks.Add(chunk);
+            }
+
+            _logger.LogInformation($"Split {endpoint} response: {totalItems} items into {chunks.Count} chunks");
+            return chunks;
+        }
+
         private async Task SendToEventHub(object eventData, string endpoint, string serverName)
+        {
+            // Extract the data field for chunking analysis
+            var dataField = eventData.GetType().GetProperty("data")?.GetValue(eventData);
+            if (dataField is JsonElement jsonElement)
+            {
+                var chunks = ChunkArrayResponse(jsonElement, endpoint);
+                var chunkId = Guid.NewGuid().ToString();
+                var totalChunks = chunks.Count;
+
+                for (int chunkIndex = 0; chunkIndex < totalChunks; chunkIndex++)
+                {
+                    try
+                    {
+                        // Reconstruct event data with chunked data
+                        var chunkedEventData = new
+                        {
+                            timestamp = eventData.GetType().GetProperty("timestamp")?.GetValue(eventData),
+                            endpoint = endpoint,
+                            server = serverName,
+                            data = chunks[chunkIndex]
+                        };
+
+                        var eventDataJson = JsonSerializer.Serialize(chunkedEventData, new JsonSerializerOptions
+                        {
+                            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+                        });
+                        var eventDataBytes = Encoding.UTF8.GetBytes(eventDataJson);
+
+                        // Send to Event Hub with proper partitioning and metadata
+                        using var eventBatch = await _eventHubClient.CreateBatchAsync();
+                        var eventHubData = new EventData(eventDataBytes);
+                        
+                        // Add custom properties for routing/filtering in downstream systems
+                        eventHubData.Properties.Add("endpoint", endpoint);
+                        eventHubData.Properties.Add("server", serverName);
+                        eventHubData.Properties.Add("timestamp", DateTime.UtcNow.ToString("O"));
+                        eventHubData.Properties.Add("source", "satisfactory-frm");
+                        eventHubData.Properties.Add("partitionKey", endpoint);
+
+                        if (!eventBatch.TryAdd(eventHubData))
+                        {
+                            var errorMessage = $"Chunk {chunkIndex + 1}/{totalChunks} too large for endpoint {endpoint}";
+                            _logger.LogError(errorMessage);
+                            
+                            // Send error to EventHub with endpoint="error"
+                            await SendErrorToEventHub(endpoint, errorMessage, serverName, chunkIndex, totalChunks);
+                            continue;
+                        }
+
+                        await _eventHubClient.SendAsync(eventBatch);
+                        
+                        if (totalChunks > 1)
+                        {
+                            _logger.LogDebug($"Successfully sent {endpoint} chunk {chunkIndex + 1}/{totalChunks} to Event Hub");
+                        }
+                        else
+                        {
+                            _logger.LogDebug($"Successfully sent {endpoint} data to Event Hub");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        var errorMessage = $"Failed to send chunk {chunkIndex + 1}/{totalChunks}: {ex.Message}";
+                        _logger.LogError(ex, $"Error sending {endpoint} chunk: {errorMessage}");
+                        
+                        // Send error to EventHub with endpoint="error"
+                        await SendErrorToEventHub(endpoint, errorMessage, serverName, chunkIndex, totalChunks);
+                    }
+                }
+            }
+        }
+
+        private async Task SendErrorToEventHub(string originalEndpoint, string errorMessage, string serverName, int? chunkIndex = null, int? totalChunks = null)
         {
             try
             {
-                var eventDataJson = JsonSerializer.Serialize(eventData, new JsonSerializerOptions
+                var errorData = new
+                {
+                    timestamp = DateTime.UtcNow,
+                    endpoint = "error",
+                    server = serverName,
+                    data = new[]
+                    {
+                        new
+                        {
+                            originalEndpoint = originalEndpoint,
+                            errorMessage = errorMessage,
+                            timestamp = DateTime.UtcNow.ToString("O"),
+                            chunkInfo = chunkIndex.HasValue ? $"{chunkIndex.Value + 1}/{totalChunks}" : null
+                        }
+                    }
+                };
+
+                var eventDataJson = JsonSerializer.Serialize(errorData, new JsonSerializerOptions
                 {
                     PropertyNamingPolicy = JsonNamingPolicy.CamelCase
                 });
                 var eventDataBytes = Encoding.UTF8.GetBytes(eventDataJson);
 
-                // Send to Event Hub with proper partitioning and metadata
                 using var eventBatch = await _eventHubClient.CreateBatchAsync();
                 var eventHubData = new EventData(eventDataBytes);
                 
-                // Add custom properties for routing/filtering in downstream systems
-                eventHubData.Properties.Add("endpoint", endpoint);
+                eventHubData.Properties.Add("endpoint", "error");
                 eventHubData.Properties.Add("server", serverName);
                 eventHubData.Properties.Add("timestamp", DateTime.UtcNow.ToString("O"));
                 eventHubData.Properties.Add("source", "satisfactory-frm");
-                eventHubData.Properties.Add("partitionKey", endpoint); // Add as property instead
+                eventHubData.Properties.Add("partitionKey", "error");
 
-                if (!eventBatch.TryAdd(eventHubData))
+                if (eventBatch.TryAdd(eventHubData))
                 {
-                    _logger.LogWarning($"Event too large for batch for endpoint {endpoint}");
-                    return;
+                    await _eventHubClient.SendAsync(eventBatch);
+                    _logger.LogDebug($"Sent error event for {originalEndpoint} to Event Hub");
                 }
-
-                await _eventHubClient.SendAsync(eventBatch);
-                _logger.LogDebug($"Successfully sent {endpoint} data to Event Hub");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Failed to send {endpoint} data to Event Hub: {ex.Message}");
-                throw; // Re-throw to trigger retry logic at higher level
+                _logger.LogError(ex, $"Failed to send error event for {originalEndpoint}: {ex.Message}");
             }
         }
 
