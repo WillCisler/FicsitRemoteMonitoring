@@ -6,6 +6,8 @@
         "EVENT_HUB_NAMESPACE": "satisfactory-eventhub-ho54wq43a3kt6.servicebus.windows.net",
         "EVENT_HUB_NAME": "satisfactory-data",
         "SATISFACTORY_FRM_URL": "http://136.243.46.118:26988",
-        "SATISFACTORY_SERVER_NAME": "sands"
+        "SATISFACTORY_SERVER_NAME": "sands",
+        "MAX_ITEMS_PER_CHUNK": "50",
+        "CHUNKING_EXCLUDED_ENDPOINTS": "getSessionInfo"
     }
 }
