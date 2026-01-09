@@ -1,0 +1,21 @@
+Version: 463028, IsEditor: No, IsPerforceBuild: No, BuildConfiguration: Shipping, Launcher: Steam, NetMode: Standalone, IsUsingMods: Yes, IsSaveGameEdited: No
+
+Unhandled Exception: EXCEPTION_ACCESS_VIOLATION reading address 0x0000000200000002
+
+FactoryGameSteam_FicsitRemoteMonitoring_Win64_Shipping!UTrains::getTrainRails() [C:\SatisfactoryModLoader\Mods\FicsitRemoteMonitoring\Source\FicsitRemoteMonitoring\Private\Endpoints\Travel\Trains.cpp:302]
+FactoryGameSteam_FicsitRemoteMonitoring_Win64_Shipping!AFicsitRemoteMonitoring::CallEndpoint() [C:\SatisfactoryModLoader\Mods\FicsitRemoteMonitoring\Source\FicsitRemoteMonitoring\Private\FicsitRemoteMonitoring.cpp:1012]
+FactoryGameSteam_FicsitRemoteMonitoring_Win64_Shipping!AFicsitRemoteMonitoring::HandleEndpoint() [C:\SatisfactoryModLoader\Mods\FicsitRemoteMonitoring\Source\FicsitRemoteMonitoring\Private\FicsitRemoteMonitoring.cpp:1061]
+FactoryGameSteam_FicsitRemoteMonitoring_Win64_Shipping!AFicsitRemoteMonitoring::HandleApiRequest() [C:\SatisfactoryModLoader\Mods\FicsitRemoteMonitoring\Source\FicsitRemoteMonitoring\Private\FicsitRemoteMonitoring.cpp:675]
+FactoryGameSteam_FicsitRemoteMonitoring_Win64_Shipping!``AFicsitRemoteMonitoring::StartWebSocketServer'::`2'::<lambda_2>::operator()'::`3'::<lambda_10>::operator()<uWS::HttpResponse<0> >() [C:\SatisfactoryModLoader\Mods\FicsitRemoteMonitoring\Source\FicsitRemoteMonitoring\Private\FicsitRemoteMonitoring.cpp:379]
+FactoryGameSteam_FicsitRemoteMonitoring_Win64_Shipping!ofats::any_detail::handler_traits<bool,uWS::HttpRouter<uWS::HttpContextData<0>::RouterData> *>::large_handler<`uWS::HttpContext<0>::onHttp'::`2'::<lambda_1> >::call() [C:\SatisfactoryModLoader\Mods\FicsitRemoteMonitoring\Source\ThirdParty\uWebSockets\MoveOnlyFunction.h:152]
+FactoryGameSteam_FicsitRemoteMonitoring_Win64_Shipping!uWS::HttpRouter<uWS::HttpContextData<0>::RouterData>::executeHandlers() [C:\SatisfactoryModLoader\Mods\FicsitRemoteMonitoring\Source\ThirdParty\uWebSockets\HttpRouter.h:188]
+FactoryGameSteam_FicsitRemoteMonitoring_Win64_Shipping!``uWS::HttpContext<0>::init'::`2'::<lambda_3>::operator()'::`2'::<lambda_1>::operator()() [C:\SatisfactoryModLoader\Mods\FicsitRemoteMonitoring\Source\ThirdParty\uWebSockets\HttpContext.h:177]
+FactoryGameSteam_FicsitRemoteMonitoring_Win64_Shipping!uWS::HttpParser::fenceAndConsumePostPadded<0>() [C:\SatisfactoryModLoader\Mods\FicsitRemoteMonitoring\Source\ThirdParty\uWebSockets\HttpParser.h:514]
+FactoryGameSteam_FicsitRemoteMonitoring_Win64_Shipping!uWS::HttpParser::consumePostPadded() [C:\SatisfactoryModLoader\Mods\FicsitRemoteMonitoring\Source\ThirdParty\uWebSockets\HttpParser.h:698]
+FactoryGameSteam_FicsitRemoteMonitoring_Win64_Shipping!`uWS::HttpContext<0>::init'::`2'::<lambda_3>::operator()() [C:\SatisfactoryModLoader\Mods\FicsitRemoteMonitoring\Source\ThirdParty\uWebSockets\HttpContext.h:143]
+FactoryGameSteam_FicsitRemoteMonitoring_Win64_Shipping!us_internal_dispatch_ready_poll() [A:\workspace\vcpkg\buildtrees\usockets\src\v0.8.8-af4482ba56.clean\src\loop.c:358]
+uv
+uv
+FactoryGameSteam_FicsitRemoteMonitoring_Win64_Shipping!`AFicsitRemoteMonitoring::StartWebSocketServer'::`2'::<lambda_2>::operator()() [C:\SatisfactoryModLoader\Mods\FicsitRemoteMonitoring\Source\FicsitRemoteMonitoring\Private\FicsitRemoteMonitoring.cpp:405]
+FactoryGameSteam_FicsitRemoteMonitoring_Win64_Shipping!TAsyncRunnable<void>::Run() [C:\ue\Engine\Source\Runtime\Core\Public\Async\Async.h:457]
+FactoryGameSteam_Core_Win64_Shipping!FRunnableThreadWin::Run() [D:\BuildAgent\work\SR11_BT\UE4\Engine\Source\Runtime\Core\Private\Windows\WindowsRunnableThread.cpp:149]
