@@ -4,7 +4,7 @@ A standalone Windows application that streams Satisfactory FRM (Ficsit Remote Mo
 
 ## Features
 
-- ✅ **Three-tier frequency system**: High (1s), Medium (5s), Standard (30s) data collection
+- ✅ **Four-tier frequency system**: High (1s), Medium (5s), Standard (30s), Hourly (1 hour) data collection
 - ✅ **Azure Event Hub integration**: Same streaming destination as Azure Function version
 - ✅ **Automatic retry logic**: Polly-based exponential backoff for resilience
 - ✅ **Concurrent processing**: Configurable parallelism with semaphore control
@@ -113,11 +113,13 @@ cd publish
     "HighFrequencyIntervalSeconds": 1, // High-priority endpoints
     "MediumFrequencyIntervalSeconds": 5, // Medium-priority endpoints
     "StandardFrequencyIntervalSeconds": 30, // Standard endpoints
+    "HourlyFrequencyIntervalSeconds": 3600, // Hourly static data (1 hour)
     "MaxConcurrentRequests": 5, // Parallel request limit
     "HttpTimeoutSeconds": 30,
     "EnableHighFrequency": true, // Enable/disable tiers
     "EnableMediumFrequency": true,
-    "EnableStandardFrequency": true
+    "EnableStandardFrequency": true,
+    "EnableHourlyFrequency": true
   },
   "Endpoints": {
     "HighFrequency": ["getPower", "getPlayer"],
@@ -126,7 +128,8 @@ cd publish
       "getFactory",
       "getExtractor"
       // ... more endpoints
-    ]
+    ],
+    "HourlyFrequency": ["getRecipes"]
   }
 }
 ```
@@ -145,11 +148,12 @@ $env:DOTNET_ENVIRONMENT="Production"  # or "Development"
 
 ## Endpoint Frequency Tiers
 
-| Tier         | Default Interval | Purpose                 | Default Endpoints                                |
-| ------------ | ---------------- | ----------------------- | ------------------------------------------------ |
-| **High**     | 1 second         | Real-time critical data | `getPower`, `getPlayer`                          |
-| **Medium**   | 5 seconds        | Semi-frequent updates   | `getGenerators`, `getVehicles`, `getSessionInfo` |
-| **Standard** | 30 seconds       | Less critical data      | `getFactory`, `getExtractor`, `getBelts`, etc.   |
+| Tier         | Default Interval | Purpose                   | Default Endpoints                                |
+| ------------ | ---------------- | ------------------------- | ------------------------------------------------ |
+| **High**     | 1 second         | Real-time critical data   | `getPower`, `getPlayer`                          |
+| **Medium**   | 5 seconds        | Semi-frequent updates     | `getGenerators`, `getVehicles`, `getSessionInfo` |
+| **Standard** | 30 seconds       | Less critical data        | `getFactory`, `getExtractor`, `getBelts`, etc.   |
+| **Hourly**   | 1 hour (3600s)   | Static game configuration | `getRecipes` (⚠️ runs on game thread)            |
 
 **To change intervals:** Edit `Streaming:*IntervalSeconds` in `appsettings.json`
 

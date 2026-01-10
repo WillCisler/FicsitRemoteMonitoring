@@ -4,7 +4,7 @@ This document explains how to configure the frequency of different FRM API endpo
 
 ## Current Function Configuration
 
-The solution uses 4 separate Azure Functions with different timer schedules:
+The solution uses 5 separate Azure Functions with different timer schedules:
 
 ### High Frequency (Every 1 second) - `SatisfactoryDataStreamer_HighFreq`
 
@@ -30,11 +30,28 @@ The solution uses 4 separate Azure Functions with different timer schedules:
 - `getBelts` - Conveyor belt networks
 - `getLifts` - Conveyor lifts
 - `getPipes` - Pipeline networks
+- `getPump` - Pipeline pumps
 - `getCables` - Power cables
-- `getTrainRails` - Railway connections
 - `getHypertube` - Hyperloop networks
 - `getSplitterMerger` - Factory connection points
 - `getThroughputCounter` - Flow monitoring
+- `getPipeJunctions` - Pipeline junction points
+- `getFrackingActivator` - Resource Well Pressurizers
+- `getTrainStation` - Train station status and cargo
+- `getTruckStation` - Truck station status and cargo
+
+### Hourly Frequency (Every 1 hour) - `SatisfactoryDataStreamer_HourlyFreq`
+
+**Static game configuration data** - Timer: `"0 0 * * * *"` (top of every hour)
+
+- `getRecipes` - All available recipes ⚠️ **Runs on game thread** (but data is chunked and smaller than getFactory)
+
+> **Note:** The `getRecipes` endpoint runs on the game thread, which means it blocks game execution while collecting data. However, this endpoint is scheduled hourly because:
+>
+> - Recipe data is static and rarely changes (only with game updates or mod installations)
+> - The data is automatically chunked for efficient streaming
+> - The dataset is smaller than `getFactory` which runs every 30 seconds
+> - One-hour intervals minimize any potential performance impact on the game server
 
 ### Legacy Function (Every 30 seconds) - `SatisfactoryDataStreamer`
 
@@ -48,12 +65,12 @@ The solution uses 4 separate Azure Functions with different timer schedules:
 ### Option 1: Move Endpoints Between Categories
 
 1. Open `SatisfactoryDataStreamer.cs`
-2. Find the endpoint arrays (lines ~42-67)
-3. Move endpoints between `_highFrequencyEndpoints`, `_mediumFrequencyEndpoints`, and `_standardFrequencyEndpoints`
+2. Find the endpoint arrays (lines ~42-77)
+3. Move endpoints between `_highFrequencyEndpoints`, `_mediumFrequencyEndpoints`, `_standardFrequencyEndpoints`, and `_hourlyFrequencyEndpoints`
 
 ### Option 2: Change Timer Frequencies
 
-1. Find the Function attributes (lines ~110-125)
+1. Find the Function attributes (lines ~110-132)
 2. Modify the timer expressions:
 
 **Common Timer Expressions:**
@@ -65,6 +82,9 @@ The solution uses 4 separate Azure Functions with different timer schedules:
 - Every 10 seconds: `"*/10 * * * * *"`
 - Every 30 seconds: `"*/30 * * * * *"`
 - Every minute: `"0 * * * * *"`
+- Every hour: `"0 0 * * * *"`
+- Every 6 hours: `"0 0 */6 * * *"`
+- Every day at midnight: `"0 0 0 * * *"`
 
 ## Examples
 
@@ -97,5 +117,15 @@ public async Task RunUltraHighFrequency([TimerTrigger("*/100 * * * * *")] TimerI
 - **High frequency (≤1s)**: Use only for critical real-time data
 - **Medium frequency (1-10s)**: Good for status monitoring
 - **Standard frequency (≥30s)**: Suitable for configuration and bulk data
+- **Hourly frequency (≥1 hour)**: For static game configuration data that rarely changes
+
+### Game Thread Endpoints
+
+Some endpoints run on the game thread and block game execution during data collection. These should be scheduled less frequently:
+
+- `getRecipes` - Currently scheduled hourly (recommended minimum: 1 hour)
+- `getSchematics` - Not currently scheduled (consider hourly if needed)
+- `getResearchTrees` - Not currently scheduled (consider hourly if needed)
+- `getSessionInfo` - Currently scheduled at 5 seconds (lightweight despite game thread usage)
 
 Monitor Azure Function costs and FRM server load when using very high frequencies.

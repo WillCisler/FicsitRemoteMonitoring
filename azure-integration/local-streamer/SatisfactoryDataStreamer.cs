@@ -27,6 +27,7 @@ public class SatisfactoryDataStreamer : IDisposable
     private readonly string[] _highFrequencyEndpoints;
     private readonly string[] _mediumFrequencyEndpoints;
     private readonly string[] _standardFrequencyEndpoints;
+    private readonly string[] _hourlyFrequencyEndpoints;
 
     public SatisfactoryDataStreamer(
         IHttpClientFactory httpClientFactory,
@@ -48,6 +49,7 @@ public class SatisfactoryDataStreamer : IDisposable
         _highFrequencyEndpoints = configuration.GetSection("Endpoints:HighFrequency").Get<string[]>() ?? Array.Empty<string>();
         _mediumFrequencyEndpoints = configuration.GetSection("Endpoints:MediumFrequency").Get<string[]>() ?? Array.Empty<string>();
         _standardFrequencyEndpoints = configuration.GetSection("Endpoints:StandardFrequency").Get<string[]>() ?? Array.Empty<string>();
+        _hourlyFrequencyEndpoints = configuration.GetSection("Endpoints:HourlyFrequency").Get<string[]>() ?? Array.Empty<string>();
 
         // Configure retry policy with exponential backoff using Polly v8
         _retryPipeline = new ResiliencePipelineBuilder<HttpResponseMessage>()
@@ -145,6 +147,11 @@ public class SatisfactoryDataStreamer : IDisposable
     public async Task CollectStandardFrequencyData(CancellationToken cancellationToken)
     {
         await RunDataCollection(_standardFrequencyEndpoints, "StandardFreq", cancellationToken);
+    }
+
+    public async Task CollectHourlyFrequencyData(CancellationToken cancellationToken)
+    {
+        await RunDataCollection(_hourlyFrequencyEndpoints, "HourlyFreq", cancellationToken);
     }
 
     private async Task RunDataCollection(string[] endpoints, string frequencyType, CancellationToken cancellationToken)

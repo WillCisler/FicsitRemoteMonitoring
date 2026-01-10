@@ -70,7 +70,16 @@ namespace SatisfactoryDataStreamer
             "getSplitterMerger",       // Belt/pipe splitters - DIGITAL TWIN: flow splitting
             "getCables",          // Power cables
             "getHypertube",       // Hyperloop networks
-            "getThroughputCounter" // Flow monitoring
+            "getThroughputCounter", // Flow monitoring
+            "getPipeJunctions",   // Pipeline junction points
+            "getFrackingActivator", // Resource Well Pressurizers
+            "getTrainStation",    // Train station status and cargo
+            "getTruckStation"     // Truck station status and cargo
+        };
+
+        // Hourly-frequency endpoints (every 1 hour) - Static game configuration data
+        private readonly string[] _hourlyFrequencyEndpoints = {
+            "getRecipes"          // All recipes - runs on game thread but chunked
         };
 
         public SatisfactoryDataStreamer(HttpClient httpClient, ILogger<SatisfactoryDataStreamer> logger)
@@ -124,6 +133,13 @@ namespace SatisfactoryDataStreamer
         public async Task RunStandardFrequency([TimerTrigger("0/30 * * * * *")] TimerInfo myTimer)
         {
             await RunDataCollection(_standardFrequencyEndpoints, "StandardFreq");
+        }
+
+        // Hourly-frequency function: runs every hour for static game configuration data
+        [Function("SatisfactoryDataStreamer_HourlyFreq")]
+        public async Task RunHourly([TimerTrigger("0 0 * * * *")] TimerInfo myTimer)
+        {
+            await RunDataCollection(_hourlyFrequencyEndpoints, "HourlyFreq");
         }
 
         // Legacy function maintained for backward compatibility (can be removed later)
